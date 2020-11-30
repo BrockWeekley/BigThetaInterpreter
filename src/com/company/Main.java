@@ -67,6 +67,8 @@ public class Main {
                     rightIterator = in.charAt(rightPosition);
                 }
 
+                System.out.println(expression);
+
                 if (!variables.containsKey(variable.toString()) && !keywords.contains(variable.toString()) && !variable.toString().equals("")) {
                     variables.put(variable.toString(), "");
                 } else if (variables.containsKey(variable.toString())) {
