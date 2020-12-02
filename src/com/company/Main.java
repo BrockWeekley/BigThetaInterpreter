@@ -18,6 +18,8 @@ public class Main {
         add("if");
     }};
 
+    public static HashMap<String, String> vars = new HashMap<>();
+
     public static void main(String[] args) {
 
         String in = "";
@@ -31,21 +33,22 @@ public class Main {
         int i = 0;
         int j = i;
         for (String line: lines) {
+
+            //TODO: call get variable on the line, return the line with the value in it
+
             if (line.contains(" while ")) {
                 // Call while function
             }
+
             if (line.contains(" for ")) {
                 // Call for function
             }
+
             if (line.contains(" if ")) {
                 String data = line;
-                System.out.println("found an if");
                 String condition = data.split("[\\(\\)]")[1];
-                System.out.println("evaluating " + condition + " it's false.");
-                //evaluate(condition);
-                //fake condition for testing if above condition is true/false
-                Boolean con = false;
-                if (con) {
+                boolean result = interpretLine(condition);
+                if (result) {
                     while (true) {
                         data = lines[j + 1];
                         j = i + 1;
@@ -77,58 +80,84 @@ public class Main {
             if (line.contains(" print ")) {
                 // Call print function
             }
-            getVariables(line);
+
             i++;
         }
 
     }
 
     private static void getVariables(String in) {
-        HashMap<String, String> variables = new HashMap<>();
-        Pattern equals = Pattern.compile("=+");
-        Matcher matcher = equals.matcher(in);
-        while (matcher.find()) {
-//            System.out.print("Start index: " + matcher.start());
-//            System.out.print(" End index: " + matcher.end());
-//            System.out.println(" Found: " + matcher.group());
-            if (matcher.end() - 1 == matcher.start()) {
-                int position = matcher.start() - 2;
-                int rightPosition = matcher.start() + 2;
-                char iterator = in.charAt(position);
-                char rightIterator = in.charAt(rightPosition);
-                StringBuilder expression = new StringBuilder();
-                StringBuilder variable = new StringBuilder();
-                while (iterator != ' ' && iterator != '\n') {
-                    variable.insert(0, iterator);
-                    position -= 1;
-                    if (position >= 0) {
-                        iterator = in.charAt(position);
-                    } else {
-                        break;
-                    }
-                }
+        in = in.replaceAll("\\r", "");
+        String regex = "[a-z0-9_]+ [-+*/^%]?= .*";
 
-                while (rightIterator != '\r') {
-                    expression.append(rightIterator);
-                    rightPosition += 1;
-                    rightIterator = in.charAt(rightPosition);
-                }
+        if (Pattern.matches(regex, in)){
+            String[] tokens = in.split(" ");
 
-//                System.out.println(expression);
-
-                if (!variables.containsKey(variable.toString()) && !keywords.contains(variable.toString()) && !variable.toString().equals("")) {
-                    variables.put(variable.toString(), "");
-                } else if (variables.containsKey(variable.toString())) {
-                    // This is where we perform operations on the variable
-                }
+            String varName = tokens[0];
+            Double currentVal;
+            try {
+                currentVal = Double.parseDouble(vars.get(varName));
+            } catch(NullPointerException e) {
+                currentVal = null;
             }
-        }
-        for (String variable : variables.keySet()) {
-            System.out.println(variable);
+            Double value = 0.0;
+
+
+            String valueString = "";
+            for(int i = 2; i < tokens.length; i++){
+                valueString += tokens[i];
+            }
+            value = Double.parseDouble(valueString);
+
+            switch(tokens[1]){
+                case "=":
+                    if (currentVal != null){
+                        vars.replace(varName, value.toString());
+                    } else {
+                        vars.put(varName, value.toString());
+                    }
+                    break;
+                case "+=":
+                    if (currentVal != null){
+                        Object newVal = performOperation("+", currentVal, value);
+                        vars.replace(varName, newVal.toString());
+                    }
+                    break;
+                case "-=":
+                    if (currentVal != null){
+                        Object newVal = performOperation("-", currentVal, value);
+                        vars.replace(varName, newVal.toString());
+                    }
+                    break;
+                case "*=":
+                    if (currentVal != null){
+                        Object newVal = performOperation("*", currentVal, value);
+                        vars.replace(varName, newVal.toString());
+                    }
+                    break;
+                case "/=":
+                    if (currentVal != null){
+                        Object newVal = performOperation("/", currentVal, value);
+                        vars.replace(varName, newVal.toString());
+                    }
+                    break;
+                case "^=":
+                    if (currentVal != null){
+                        Object newVal = performOperation("^", currentVal, value);
+                        vars.replace(varName, newVal.toString());
+                    }
+                    break;
+                case "%=":
+                    if (currentVal != null){
+                        Object newVal = performOperation("%", currentVal, value);
+                        vars.replace(varName, newVal.toString());
+                    }
+                    break;
+            }
         }
     }
 
-    public static double interpretMath(String in){
+    private static double interpretMath(String in){
         String[] mathStrings = in.split("((?<=[-+*/%^])|(?=[-+*/%^]))(?![^\\(\\[]*[\\]\\)])");
         System.out.print(Arrays.toString(mathStrings));
 
@@ -163,7 +192,7 @@ public class Main {
             else if(eq.matches("\\d*\\.*\\d")){
                 double toNum = Double.parseDouble(eq);
                 if(!(operation.equals("")))
-                    result = performOperaton(operation, result, toNum);
+                    result = performOperation(operation, result, toNum);
                 else
                     result = toNum;
             }
@@ -174,7 +203,7 @@ public class Main {
         return result;
     }
 
-    public static double performOperaton(String operation, double firstNum, double secondNum){
+    private static double performOperation(String operation, double firstNum, double secondNum){
         double result = 0;
 
         switch (operation){
@@ -201,5 +230,48 @@ public class Main {
                 result = 0;
         }
         return result;
+    }
+
+    public static boolean interpretLine(String line)
+    {
+        line = line.replaceAll("\\s","");
+        if(line.matches("\\d*\\.*\\d*<\\d*\\.*\\d*"))
+        {
+            double x = Double.parseDouble(line.split("<")[0]);
+            double y = Double.parseDouble(line.split("<")[1]);
+            return x<y;
+        }
+        else if(line.matches("\\d*\\.*\\d*<=\\d*\\.*\\d*"))
+        {
+            double x = Double.parseDouble(line.split("<=")[0]);
+            double y = Double.parseDouble(line.split("<=")[1]);
+            return x<=y;
+        }
+        else if(line.matches("\\d*\\.*\\d*>\\d*\\.*\\d*"))
+        {
+            double x = Double.parseDouble(line.split(">")[0]);
+            double y = Double.parseDouble(line.split(">")[1]);
+            return x>y;
+        }
+        else if(line.matches("\\d*\\.*\\d*>=\\d*\\.*\\d*"))
+        {
+            double x = Double.parseDouble(line.split(">=")[0]);
+            double y = Double.parseDouble(line.split(">=")[1]);
+            return x>=y;
+        }
+        else if(line.matches("\\d*\\.*\\d*==\\d*\\.*\\d*"))
+        {
+            double x = Double.parseDouble(line.split("==")[0]);
+            double y = Double.parseDouble(line.split("==")[1]);
+            return x<=y;
+        }
+        else if(line.matches("\\d*\\.*\\d*!=\\d*\\.*\\d*"))
+        {
+            double x = Double.parseDouble(line.split("!=")[0]);
+            double y = Double.parseDouble(line.split("!=")[1]);
+            return x!=y;
+        }
+
+        return false;
     }
 }
