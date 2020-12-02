@@ -48,12 +48,14 @@ public class Main {
                     else{
                         while(true) {
                             data = myReader.nextLine();
-                            if(data.contains("else")){
+                            if(data.contains("else:")){
                                 data = myReader.nextLine();
                                // execute(data);
                                 System.out.println("\nnow executing " + data);
                             }
-                            break;
+                            else if(data.equals("")) {
+                                break;
+                            }
                         }
 
                     }
