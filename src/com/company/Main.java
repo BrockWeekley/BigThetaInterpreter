@@ -14,12 +14,12 @@ public class Main {
         }
         in = "2 > 3";
 
-        if(in.matches("\\d*\\.*\\d*\\s*<*>*=*\\s*\\d*\\.*\\d*"))
+        if(in.matches("\\d*\\.*\\d*<*>*=*\\d*\\.*\\d*"))
         {
             System.out.println(interpretLine(in,true));
         }
 
-        in = "(2*2) + (3*3)";
+        in = "2 * (2*2) + (3*3)";
 
         if (in.contains("+") || in.contains("-") || in.contains("*") || in.contains("/") || in.contains("%") || in.contains("^")){
             //String[] mathStrings = (in.replaceAll("\\s","")).split("((?<=[-+*/%^])|(?=[-+*/%^]))(?![^\\(\\[]*[\\]\\)])");
