@@ -19,6 +19,7 @@ public class Main {
     }
     public static boolean interpretLine(String line, boolean f)
     {
+        line = line.replaceAll("\\s","");
         if(line.matches("\\d*\\.*\\d*<\\d*\\.*\\d*"))
         {
             double x = Double.parseDouble(line.split("<")[0]);
