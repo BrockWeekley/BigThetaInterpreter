@@ -26,13 +26,59 @@ public class Main {
             System.out.println("Could not read from file");
         }
 
-        getVariables(in);
-
-//        String in = "print('Hello World')";
-//        if(in.contains("print")) {
-//            String[] parts = in.split("'", 3);
-//            System.out.println(parts[1]);
-//        }
+        String[] lines = in.split("\n");
+        int i = 0;
+        int j = i;
+        for (String line: lines) {
+            if (line.contains(" while ")) {
+                // Call while function
+            }
+            if (line.contains(" for ")) {
+                // Call for function
+            }
+            if (line.contains(" if ")) {
+                String data = line;
+                System.out.println("found an if");
+                String condition = data.split("[\\(\\)]")[1];
+                System.out.println("evaluating " + condition + " it's false.");
+                //evaluate(condition);
+                //fake condition for testing if above condition is true/false
+                Boolean con = false;
+                if (con) {
+                    while (true) {
+                        data = lines[j + 1];
+                        j = i + 1;
+                        //end if with blank line or an else:
+                        if (data.equals("")) {
+                            break;
+                        } else if (!data.contains("else")) {
+                            //execute(data);
+                            System.out.println("\nnow executing " + data);
+                        } else {
+                            break;
+                        }
+                    }
+                } else {
+                    while (true) {
+                        data = lines[j + 1];
+                        j = i + 1;
+                        if (data.contains("else:")) {
+                            data = lines[j + 1];
+                            j = i + 1;
+                            // execute(data);
+                            System.out.println("\nnow executing " + data);
+                        } else if (data.equals("")) {
+                            break;
+                        }
+                    }
+                }
+            }
+            if (line.contains(" print ")) {
+                // Call print function
+            }
+            getVariables(line);
+            i++;
+        }
 
     }
 
@@ -61,13 +107,13 @@ public class Main {
                     }
                 }
 
-                while (rightIterator != '\n') {
+                while (rightIterator != '\r') {
                     expression.append(rightIterator);
                     rightPosition += 1;
                     rightIterator = in.charAt(rightPosition);
                 }
 
-                System.out.println(expression);
+//                System.out.println(expression);
 
                 if (!variables.containsKey(variable.toString()) && !keywords.contains(variable.toString()) && !variable.toString().equals("")) {
                     variables.put(variable.toString(), "");
