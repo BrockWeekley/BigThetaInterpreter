@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -125,5 +126,80 @@ public class Main {
         for (String variable : variables.keySet()) {
             System.out.println(variable);
         }
+    }
+
+    public static double interpretMath(String in){
+        String[] mathStrings = in.split("((?<=[-+*/%^])|(?=[-+*/%^]))(?![^\\(\\[]*[\\]\\)])");
+        System.out.print(Arrays.toString(mathStrings));
+
+        double result = 0;
+        String operation = "";
+        for(String eq : mathStrings){
+            if(eq.matches("\\(([^()]+)\\)")){
+                double parResult = interpretMath(eq.replaceAll("[()]", ""));
+                switch (operation){
+                    case "+":
+                        result += parResult;
+                        break;
+                    case "-":
+                        result -= parResult;
+                        break;
+                    case "*":
+                        result *= parResult;
+                        break;
+                    case "/":
+                        result /= parResult;
+                        break;
+                    case "%":
+                        result %= parResult;
+                        break;
+                    case "^":
+                        result = Math.pow(result, parResult);
+                        break;
+                    default:
+                        result = parResult;
+                }
+            }
+            else if(eq.matches("\\d*\\.*\\d")){
+                double toNum = Double.parseDouble(eq);
+                if(!(operation.equals("")))
+                    result = performOperaton(operation, result, toNum);
+                else
+                    result = toNum;
+            }
+            else{
+                operation = eq;
+            }
+        }
+        return result;
+    }
+
+    public static double performOperaton(String operation, double firstNum, double secondNum){
+        double result = 0;
+
+        switch (operation){
+            case "+":
+                result = firstNum + secondNum;
+                break;
+            case "-":
+                result = firstNum - secondNum;
+                break;
+            case "*":
+                result = firstNum * secondNum;
+                break;
+            case "/":
+                result = firstNum / secondNum;
+                break;
+            case "%":
+                result = firstNum % secondNum;
+                break;
+            case "^":
+                result = Math.pow(firstNum, secondNum);
+                break;
+            default:
+                System.out.println("Something went wrong with " + operation);
+                result = 0;
+        }
+        return result;
     }
 }
