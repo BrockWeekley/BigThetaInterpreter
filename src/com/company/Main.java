@@ -3,38 +3,43 @@ package com.company;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.regex.Matcher;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class Main {
-    private static List<String> keywords = new ArrayList<>(){{
-        add("while");
-        add("for");
-        add("print");
-        add("if");
-    }};
+//    private static List<String> keywords = new ArrayList<>(){{
+//        add("while");
+//        add("for");
+//        add("print");
+//        add("if");
+//    }};
 
-    public static HashMap<String, String> vars = new HashMap<>();
+    private static HashMap<String, String> vars = new HashMap<>();
 
     public static void main(String[] args) {
-
         String in = "";
-        try {
-            in = Files.readString(Path.of("practice.py"));
-        } catch (IOException e) {
-            System.out.println("Could not read from file");
+        while(true) {
+            Scanner myObj = new Scanner(System.in);
+            System.out.println("Welcome to the python interpreter, please enter the name of your file, followed by the .py extension.");
+            String filename = myObj.nextLine();
+            try {
+                in = Files.readString(Path.of(filename));
+                break;
+            } catch (IOException e) {
+                System.out.println("Could not read from file");
+            }
         }
+
 
         String[] lines = in.split("\n");
         int i = 0;
-        int j = i;
         for (String line: lines) {
 
-            //TODO: call get variable on the line, return the line with the value in it
+            if (line.contains("#")) {
+                continue;
+            }
+
+            line = replaceVariables(line);
 
             if (line.contains(" while ")) {
                 // Call while function
@@ -45,113 +50,108 @@ public class Main {
             }
 
             if (line.contains(" if ")) {
-                String data = line;
-                String condition = data.split("[\\(\\)]")[1];
-                boolean result = interpretLine(condition);
-                if (result) {
-                    while (true) {
-                        data = lines[j + 1];
-                        j = i + 1;
-                        //end if with blank line or an else:
-                        if (data.equals("")) {
-                            break;
-                        } else if (!data.contains("else")) {
-                            //execute(data);
-                            System.out.println("\nnow executing " + data);
-                        } else {
-                            break;
-                        }
-                    }
-                } else {
-                    while (true) {
-                        data = lines[j + 1];
-                        j = i + 1;
-                        if (data.contains("else:")) {
-                            data = lines[j + 1];
-                            j = i + 1;
-                            // execute(data);
-                            System.out.println("\nnow executing " + data);
-                        } else if (data.equals("")) {
-                            break;
-                        }
-                    }
+                readIf(line, lines, i);
+            }
+            if (line.contains(" print "))
+            {
+                String printContent = line.substring(line.indexOf("(") + 1, line.lastIndexOf(")") - 1);
+                if (printContent.matches("((?<![\\\\])['\"])((?:.(?!(?<![\\\\])\\1))*.?)\\1")) {
+                    System.out.println(printContent);
                 }
             }
-            if (line.contains(" print ")) {
-                // Call print function
-            }
-
             i++;
         }
 
     }
 
-    private static void getVariables(String in) {
+    private static void assignVariables(String in) {
+            List<String> tokens = new ArrayList<>(Arrays.asList(in.split(" ")));
+
+            String varName = tokens.get(0);
+            String previousValue;
+            try {
+                previousValue = vars.get(varName);
+            } catch(NullPointerException e) {
+                previousValue = null;
+            }
+            
+            String newValue;
+            ArrayList<String> expressionTokens = new ArrayList<>();
+            boolean isString = false;
+            if (tokens.get(3).contains("\"") && tokens.get(tokens.size() - 1).contains("\"")) {
+                for(int i = 2; i < tokens.size(); i++){
+                    expressionTokens.add(tokens.get(i));
+                }
+                newValue = String.join(" ", expressionTokens);
+                isString = true;
+            } else {
+                newValue = tokens.get(3);
+            }
+
+            String operation = tokens.get(1);
+            if (previousValue != null){
+                if (!operation.equals("=")) {
+                    if (!isString) {
+                        newValue = String.valueOf(performOperation(operation.substring(0, 0), Double.parseDouble(previousValue), Double.parseDouble(newValue)));
+                    }
+                }
+                vars.replace(varName, newValue);
+            } else {
+                if (operation.equals("=")) {
+                    vars.put(varName, newValue);
+                } else {
+                    System.out.println("Syntax Error: Variable " + varName + " not defined.");
+                }
+            }
+    }
+
+    private static String replaceVariables(String in) {
         in = in.replaceAll("\\r", "");
         String regex = "[a-z0-9_]+ [-+*/^%]?= .*";
 
         if (Pattern.matches(regex, in)){
-            String[] tokens = in.split(" ");
-
-            String varName = tokens[0];
-            Double currentVal;
-            try {
-                currentVal = Double.parseDouble(vars.get(varName));
-            } catch(NullPointerException e) {
-                currentVal = null;
+            assignVariables(in);
+        } else {
+            for (Map.Entry<String, String> entry: vars.entrySet()) {
+                if (in.contains(entry.getKey())) {
+                    in = in.replaceAll("\\b" + entry.getKey() + "\\b", entry.getValue());
+                }
             }
+        }
+        return in;
+    }
 
-            StringBuilder sb = new StringBuilder();
-            for(int i = 2; i < tokens.length; i++) {
-                sb.append(tokens[i]);
+    private static void readIf(String in, String[] lines, int currentLineIndex) {
+        String data = in;
+        int j = currentLineIndex;
+        String condition = data.split("[\\(\\)]")[1];
+        boolean result = determineStatement(condition);
+        if (result) {
+            while (true) {
+                data = lines[j + 1];
+                j = currentLineIndex + 1;
+                //end if with blank line or an else:
+                if (data.equals("")) {
+                    break;
+                } else if (!data.contains("else")) {
+                    //execute(data);
+                    System.out.println("\nnow executing " + data);
+                } else {
+                    break;
+                }
             }
-
-            Double value = interpretMath(sb.toString());
-
-            switch(tokens[1]){
-                case "=":
-                    if (currentVal != null){
-                        vars.replace(varName, value.toString());
-                    } else {
-                        vars.put(varName, value.toString());
-                    }
+        } else {
+            while (true) {
+                data = lines[j + 1];
+                j = currentLineIndex + 1;
+                if (data.contains("else:")) {
+                    data = lines[j + 1];
+                    j = currentLineIndex + 1;
+                    // execute(data);
+                    System.out.println("\nnow executing " + data);
+                } else if (data.equals("")) {
                     break;
-                case "+=":
-                    if (currentVal != null){
-                        Object newVal = performOperation("+", currentVal, value);
-                        vars.replace(varName, newVal.toString());
-                    }
-                    break;
-                case "-=":
-                    if (currentVal != null){
-                        Object newVal = performOperation("-", currentVal, value);
-                        vars.replace(varName, newVal.toString());
-                    }
-                    break;
-                case "*=":
-                    if (currentVal != null){
-                        Object newVal = performOperation("*", currentVal, value);
-                        vars.replace(varName, newVal.toString());
-                    }
-                    break;
-                case "/=":
-                    if (currentVal != null){
-                        Object newVal = performOperation("/", currentVal, value);
-                        vars.replace(varName, newVal.toString());
-                    }
-                    break;
-                case "^=":
-                    if (currentVal != null){
-                        Object newVal = performOperation("^", currentVal, value);
-                        vars.replace(varName, newVal.toString());
-                    }
-                    break;
-                case "%=":
-                    if (currentVal != null){
-                        Object newVal = performOperation("%", currentVal, value);
-                        vars.replace(varName, newVal.toString());
-                    }
-                    break;
+                }
             }
         }
     }
@@ -203,7 +203,7 @@ public class Main {
     }
 
     private static double performOperation(String operation, double firstNum, double secondNum){
-        double result = 0;
+        double result;
 
         switch (operation){
             case "+":
@@ -231,7 +231,7 @@ public class Main {
         return result;
     }
 
-    public static boolean interpretLine(String line)
+    private static boolean determineStatement(String line)
     {
         line = line.replaceAll("\\s","");
         if(line.matches("\\d*\\.*\\d*<\\d*\\.*\\d*"))
