@@ -100,14 +100,13 @@ public class Main {
             } catch(NullPointerException e) {
                 currentVal = null;
             }
-            Double value = 0.0;
 
-
-            String valueString = "";
-            for(int i = 2; i < tokens.length; i++){
-                valueString += tokens[i];
+            StringBuilder sb = new StringBuilder();
+            for(int i = 2; i < tokens.length; i++) {
+                sb.append(tokens[i]);
             }
-            value = Double.parseDouble(valueString);
+
+            Double value = interpretMath(sb.toString());
 
             switch(tokens[1]){
                 case "=":
