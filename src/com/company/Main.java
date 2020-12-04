@@ -19,10 +19,10 @@ public class Main {
             System.out.println(interpretLine(in,true));
         }
 
-        in = "2 * (2*2) + (3*3)";
+        in = "(-2 * 3) * 3 / 12";
 
         if (in.contains("+") || in.contains("-") || in.contains("*") || in.contains("/") || in.contains("%") || in.contains("^")){
-            //String[] mathStrings = (in.replaceAll("\\s","")).split("((?<=[-+*/%^])|(?=[-+*/%^]))(?![^\\(\\[]*[\\]\\)])");
+            //String[] mathStrings = (in.replaceAll("\\s","")).split("((?<=[-+*/%^])|(?=[-+*/%^]))(?![^\\(\\[]*[\\]\\)])((?<=[^\\d-])|(?=[^\\d-]))");
             //System.out.print(Arrays.toString(mathStrings));
             System.out.println(interpretMath(in.replaceAll("\\s","")));
         }
@@ -71,7 +71,7 @@ public class Main {
     }
 
     public static double interpretMath(String in){
-        String[] mathStrings = in.split("((?<=[-+*/%^])|(?=[-+*/%^]))(?![^\\(\\[]*[\\]\\)])");
+        String[] mathStrings = in.split("((?<=[-+*/%^])|(?=[-+*/%^]))(?![^\\(\\[]*[\\]\\)])((?<=[^\\d-])|(?=[^\\d-]))");
         System.out.print(Arrays.toString(mathStrings));
 
         double result = 0;
@@ -102,7 +102,7 @@ public class Main {
                         result = parResult;
                 }
             }
-            else if(eq.matches("\\d*\\.*\\d")){
+            else if(eq.matches("[-+]?[0-9]*\\.?[0-9]+")){
                 double toNum = Double.parseDouble(eq);
                 if(!(operation.equals("")))
                     result = performOperaton(operation, result, toNum);
