@@ -74,18 +74,18 @@ public class Main {
             } catch(NullPointerException e) {
                 previousValue = null;
             }
-            
+
             String newValue;
             ArrayList<String> expressionTokens = new ArrayList<>();
             boolean isString = false;
-            if (tokens.get(3).contains("\"") && tokens.get(tokens.size() - 1).contains("\"")) {
+            if (tokens.get(2).contains("\"") && tokens.get(tokens.size() - 1).contains("\"")) {
                 for(int i = 2; i < tokens.size(); i++){
                     expressionTokens.add(tokens.get(i));
                 }
                 newValue = String.join(" ", expressionTokens);
                 isString = true;
             } else {
-                newValue = tokens.get(3);
+                newValue = tokens.get(2);
             }
 
             String operation = tokens.get(1);
@@ -124,7 +124,8 @@ public class Main {
     private static void readIf(String in, String[] lines, int currentLineIndex) {
         String data = in;
         int j = currentLineIndex;
-        String condition = data.split("[\\(\\)]")[1];
+        String condition = data.replace("if ", "").replace(":", "");
+//        String condition = data.split("[\\(\\)]")[1];
         boolean result = determineStatement(condition);
         if (result) {
             while (true) {
