@@ -19,7 +19,7 @@ public class Main {
             System.out.println(interpretLine(in,true));
         }
 
-        in = "(-2 * 3) * 3 / 12";
+        in = "-(2 * 3) * 3";
 
         if (in.contains("+") || in.contains("-") || in.contains("*") || in.contains("/") || in.contains("%") || in.contains("^")){
             //String[] mathStrings = (in.replaceAll("\\s","")).split("((?<=[-+*/%^])|(?=[-+*/%^]))(?![^\\(\\[]*[\\]\\)])((?<=[^\\d-])|(?=[^\\d-]))");
@@ -72,6 +72,8 @@ public class Main {
 
     public static double interpretMath(String in){
         String[] mathStrings = in.split("((?<=[-+*/%^])|(?=[-+*/%^]))(?![^\\(\\[]*[\\]\\)])((?<=[^\\d-])|(?=[^\\d-]))");
+        //Assuming that there can be no nested parens (otherwise, you can't use a Java Regex for this task because recursive matching is not supported)
+
         System.out.print(Arrays.toString(mathStrings));
 
         double result = 0;
