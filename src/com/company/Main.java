@@ -18,7 +18,11 @@ public class Main {
 
     public static void main(String[] args) {
         String in = "y = 6 \n" +
-                "x = (y + y) % 2";
+                "x = (y + y) % 2\n" +
+                "if(x==y):\n" +
+                "    print('This won\'t run)\n" +
+                "else:\n" +
+                "   print('This will run')\n";
 //        while(true) {
 //            Scanner myObj = new Scanner(System.in);
 //            System.out.println("Welcome to the python interpreter, please enter the name of your file, followed by the .py extension.");
@@ -31,48 +35,48 @@ public class Main {
 //            }
 //        }
 
-
         String[] lines = in.split("\n");
-        int i = 0;
-        for (String line: lines) {
-
-            if (line.contains("#")) {
+        for (int i = 0; i < lines.length - 1;) {
+            if (lines[i].matches("#.*")) {
                 continue;
             }
-
-            line = line.replaceAll("\\r", "");
-
-            if (line.matches("[a-z0-9_]+ [-+*/^%]?= .*")){
-                String[] lineSplit = line.split("=");
-                line = lineSplit[0] + "=" + replaceVariables(lineSplit[1]);
-                assignVariables(line);
-
-            } else {
-                line = replaceVariables(line);
-            }
-
-            if (line.matches("\\s*while(.*).*")) {
-                // Call while function
-            }
-
-            if (line.matches("\\s*for(.*).*")) {
-                // Call for function
-            }
-
-            if (line.matches("\\s*if(.*).*")) {
-                readIf(line, lines, i);
-            }
-
-            if (line.matches("\\s*print(.*).*"))
-            {
-                String printContent = line.substring(line.indexOf("(") + 1, line.lastIndexOf(")") - 1);
-                if (printContent.matches("((?<![\\\\])['\"])((?:.(?!(?<![\\\\])\\1))*.?)\\1")) {
-                    System.out.println(printContent);
-                }
-            }
-            i++;
+            i = interpretLine(lines, lines[i], i);
         }
 
+    }
+
+    private static int interpretLine(String[] lines, String line, int lineCount) {
+        line = line.replaceAll("\\r", "");
+
+        if (line.matches("[a-z0-9_]+ [-+*/^%]?= .*")){
+            String[] lineSplit = line.split("=");
+            line = lineSplit[0] + "=" + replaceVariables(lineSplit[1]);
+            assignVariables(line);
+
+        } else {
+            line = replaceVariables(line);
+        }
+
+        if (line.matches("\\s*while(.*).*")) {
+            // Call while function
+        }
+
+        if (line.matches("\\s*for(.*).*")) {
+            // Call for function
+        }
+
+        if (line.matches("\\s*if(.*).*")) {
+            lineCount = readIf(lines, line, lineCount);
+        }
+
+        if (line.matches("\\s*print(.*).*")) {
+            String printContent = line.substring(line.indexOf("(") + 1, line.lastIndexOf(")") - 1);
+            if (printContent.matches("((?<![\\\\])['\"])((?:.(?!(?<![\\\\])\\1))*.?)\\1")) {
+                System.out.println(printContent);
+            }
+        }
+
+        return lineCount;
     }
 
     private static void assignVariables(String in) {
@@ -134,40 +138,31 @@ public class Main {
         return in;
     }
 
-    private static void readIf(String in, String[] lines, int currentLineIndex) {
-        String data = in;
-        int j = currentLineIndex;
-        String condition = data.replace("if ", "").replace(":", "");
-//        String condition = data.split("[\\(\\)]")[1];
+    private static int readIf(String[] lines, String line, int lineCount) {
+        String condition;
+
+        if (line.matches("if\\(.*\\):")) {
+            condition = line.replace("if(", "").replace("):", "");
+        } else if (line.matches("if .*:")) {
+            condition = line.replace("if ", "").replace(":", "");
+        } else {
+            System.out.println("Syntax Error: Invalid format for if statement");
+            return lineCount;
+        }
+
         boolean result = determineStatement(condition);
         if (result) {
-            while (true) {
-                data = lines[j + 1];
-                j = currentLineIndex + 1;
-                //end if with blank line or an else:
-                if (data.equals("")) {
-                    break;
-                } else if (!data.contains("else")) {
-                    //execute(data);
-                    System.out.println("\nnow executing " + data);
-                } else {
-                    break;
-                }
-            }
+            lineCount++;
         } else {
-            while (true) {
-                data = lines[j + 1];
-                j = currentLineIndex + 1;
-                if (data.contains("else:")) {
-                    data = lines[j + 1];
-                    j = currentLineIndex + 1;
-                    // execute(data);
-                    System.out.println("\nnow executing " + data);
-                } else if (data.equals("")) {
-                    break;
-                }
-            }
+            String hi = "if(6==5):" +
+                            "print('Hello')" +
+                        "if(5==5):" +
+                            "print('Hello')" +
+                        "else:" +
+                            "print('hi')";
         }
+
+        return lineCount;
     }
 
     private static double interpretMath(String in){
@@ -252,37 +247,37 @@ public class Main {
         {
             double x = Double.parseDouble(line.split("<")[0]);
             double y = Double.parseDouble(line.split("<")[1]);
-            return x<y;
+            return x < y;
         }
         else if(line.matches("\\d*\\.*\\d*<=\\d*\\.*\\d*"))
         {
             double x = Double.parseDouble(line.split("<=")[0]);
             double y = Double.parseDouble(line.split("<=")[1]);
-            return x<=y;
+            return x <= y;
         }
         else if(line.matches("\\d*\\.*\\d*>\\d*\\.*\\d*"))
         {
             double x = Double.parseDouble(line.split(">")[0]);
             double y = Double.parseDouble(line.split(">")[1]);
-            return x>y;
+            return x > y;
         }
         else if(line.matches("\\d*\\.*\\d*>=\\d*\\.*\\d*"))
         {
             double x = Double.parseDouble(line.split(">=")[0]);
             double y = Double.parseDouble(line.split(">=")[1]);
-            return x>=y;
+            return x >= y;
         }
         else if(line.matches("\\d*\\.*\\d*==\\d*\\.*\\d*"))
         {
             double x = Double.parseDouble(line.split("==")[0]);
             double y = Double.parseDouble(line.split("==")[1]);
-            return x<=y;
+            return x == y;
         }
         else if(line.matches("\\d*\\.*\\d*!=\\d*\\.*\\d*"))
         {
             double x = Double.parseDouble(line.split("!=")[0]);
             double y = Double.parseDouble(line.split("!=")[1]);
-            return x!=y;
+            return x != y;
         }
 
         return false;
