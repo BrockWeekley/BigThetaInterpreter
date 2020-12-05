@@ -41,27 +41,38 @@ public class Main {
 
             line = replaceVariables(line);
 
-            if (line.matches("\\s*while(.*).*")) {
+            if (line.matches("\\s*(while ).*")) {
                 // Call while function
             }
 
-            if (line.matches("\\s*for(.*).*")) {
+            if (line.matches("\\s*(for ).*")) {
                 // Call for function
             }
 
-            if (line.matches("\\s*if(.*).*")) {
+            if (line.matches("\\s*(if ).*")) {
                 readIf(line, lines, i);
             }
-            if (line.matches("\\s*print(.*).*"))
+            if (line.matches("\\s*(print\\(.*\\))"))
             {
-                String printContent = line.substring(line.indexOf("(") + 1, line.lastIndexOf(")") - 1);
-                if (printContent.matches("((?<![\\\\])['\"])((?:.(?!(?<![\\\\])\\1))*.?)\\1")) {
-                    System.out.println(printContent);
-                }
+                handlePrint(line);
             }
             i++;
         }
 
+    }
+
+    private static void handlePrint(String in) {
+        String printContent = in.substring(in.indexOf("(") + 1, in.lastIndexOf(")"));
+        if (printContent.contains("str(")) {
+            printContent = printContent.replaceAll("str\\(", "");
+            printContent = printContent.replaceAll("\\)", "");
+        }
+
+        if (printContent.contains("+")){
+            printContent = printContent.replaceAll("\\s*\\+\\s*", "");
+        }
+
+        System.out.println(printContent.replaceAll("\"",""));
     }
 
     private static void assignVariables(String in) {
@@ -85,7 +96,7 @@ public class Main {
                 newValue = String.join(" ", expressionTokens);
                 isString = true;
             } else {
-                newValue = tokens.get(2);
+                newValue = String.valueOf(interpretMath(tokens.get(2)));
             }
 
             String operation = tokens.get(1);
