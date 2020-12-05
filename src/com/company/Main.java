@@ -17,7 +17,8 @@ public class Main {
     private static HashMap<String, String> vars = new HashMap<>();
 
     public static void main(String[] args) {
-        String in = "y = 6 \nx = y + 2";
+        String in = "y = 6 \n" +
+                "x = (y + y) % 2";
 //        while(true) {
 //            Scanner myObj = new Scanner(System.in);
 //            System.out.println("Welcome to the python interpreter, please enter the name of your file, followed by the .py extension.");
@@ -35,8 +36,6 @@ public class Main {
         int i = 0;
         for (String line: lines) {
 
-
-
             if (line.contains("#")) {
                 continue;
             }
@@ -45,15 +44,12 @@ public class Main {
 
             if (line.matches("[a-z0-9_]+ [-+*/^%]?= .*")){
                 String[] lineSplit = line.split("=");
-                line = lineSplit[0] + " = " + replaceVariables(lineSplit[1]);
+                line = lineSplit[0] + "=" + replaceVariables(lineSplit[1]);
                 assignVariables(line);
 
             } else {
                 line = replaceVariables(line);
             }
-            System.out.println(line);
-
-
 
             if (line.matches("\\s*while(.*).*")) {
                 // Call while function
@@ -66,6 +62,7 @@ public class Main {
             if (line.matches("\\s*if(.*).*")) {
                 readIf(line, lines, i);
             }
+
             if (line.matches("\\s*print(.*).*"))
             {
                 String printContent = line.substring(line.indexOf("(") + 1, line.lastIndexOf(")") - 1);
@@ -107,17 +104,23 @@ public class Main {
             if (previousValue != null){
                 if (!operation.equals("=")) {
                     if (!isString) {
-                        newValue = String.valueOf(performOperation(operation.substring(0, 0), Double.parseDouble(previousValue), Double.parseDouble(newValue)));
+                        newValue = String.valueOf(performOperation(operation.substring(0, 1), Double.parseDouble(previousValue), Double.parseDouble(newValue)));
                     }
                 }
                 vars.replace(varName, newValue);
             } else {
+                if (tokens.size() > 3) {
+                    String expression = in.substring(in.indexOf("=") + 2);
+                    expression = expression.replaceAll("\\s", "");
+                    newValue = String.valueOf(interpretMath(expression));
+                }
                 if (operation.equals("=")) {
                     vars.put(varName, newValue);
                 } else {
                     System.out.println("Syntax Error: Variable " + varName + " not defined.");
                 }
             }
+            System.out.println(varName + ": " + vars.get(varName));
     }
 
     private static String replaceVariables(String in) {
@@ -167,11 +170,9 @@ public class Main {
         }
     }
 
-    public static double interpretMath(String in){
+    private static double interpretMath(String in){
         String[] mathStrings = in.split("((?<=[-+*/%^])|(?=[-+*/%^]))(?![^\\(\\[]*[\\]\\)])((?<=[^\\d-])|(?=[^\\d-]))");
         //Assuming that there can be no nested parens (otherwise, you can't use a Java Regex for this task because recursive matching is not supported)
-
-        System.out.print(Arrays.toString(mathStrings));
 
         double result = 0;
         String operation = "";
