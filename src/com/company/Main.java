@@ -41,18 +41,18 @@ public class Main {
 
             line = replaceVariables(line);
 
-            if (line.contains(" while ")) {
+            if (line.matches("\\s*while(.*).*")) {
                 // Call while function
             }
 
-            if (line.contains(" for ")) {
+            if (line.matches("\\s*for(.*).*")) {
                 // Call for function
             }
 
-            if (line.contains(" if ")) {
+            if (line.matches("\\s*if(.*).*")) {
                 readIf(line, lines, i);
             }
-            if (line.contains(" print "))
+            if (line.matches("\\s*print(.*).*"))
             {
                 String printContent = line.substring(line.indexOf("(") + 1, line.lastIndexOf(")") - 1);
                 if (printContent.matches("((?<![\\\\])['\"])((?:.(?!(?<![\\\\])\\1))*.?)\\1")) {
