@@ -17,7 +17,7 @@ public class Main {
     private static HashMap<String, String> vars = new HashMap<>();
 
     public static void main(String[] args) {
-        String in = "";
+        String in;
         while(true) {
             Scanner myObj = new Scanner(System.in);
             System.out.println("Welcome to the python interpreter, please enter the name of your file, followed by the .py extension.");
@@ -157,8 +157,10 @@ public class Main {
         }
     }
 
-    private static double interpretMath(String in){
-        String[] mathStrings = in.split("((?<=[-+*/%^])|(?=[-+*/%^]))(?![^\\(\\[]*[\\]\\)])");
+    public static double interpretMath(String in){
+        String[] mathStrings = in.split("((?<=[-+*/%^])|(?=[-+*/%^]))(?![^\\(\\[]*[\\]\\)])((?<=[^\\d-])|(?=[^\\d-]))");
+        //Assuming that there can be no nested parens (otherwise, you can't use a Java Regex for this task because recursive matching is not supported)
+
         System.out.print(Arrays.toString(mathStrings));
 
         double result = 0;
@@ -189,7 +191,7 @@ public class Main {
                         result = parResult;
                 }
             }
-            else if(eq.matches("\\d*\\.*\\d")){
+            else if(eq.matches("[-+]?[0-9]*\\.?[0-9]+")){
                 double toNum = Double.parseDouble(eq);
                 if(!(operation.equals("")))
                     result = performOperation(operation, result, toNum);
