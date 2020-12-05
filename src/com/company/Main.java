@@ -17,29 +17,43 @@ public class Main {
     private static HashMap<String, String> vars = new HashMap<>();
 
     public static void main(String[] args) {
-        String in;
-        while(true) {
-            Scanner myObj = new Scanner(System.in);
-            System.out.println("Welcome to the python interpreter, please enter the name of your file, followed by the .py extension.");
-            String filename = myObj.nextLine();
-            try {
-                in = Files.readString(Path.of(filename));
-                break;
-            } catch (IOException e) {
-                System.out.println("Could not read from file");
-            }
-        }
+        String in = "y = 6 \nx = y + 2";
+//        while(true) {
+//            Scanner myObj = new Scanner(System.in);
+//            System.out.println("Welcome to the python interpreter, please enter the name of your file, followed by the .py extension.");
+//            String filename = myObj.nextLine();
+//            try {
+//                in = Files.readString(Path.of(filename));
+//                break;
+//            } catch (IOException e) {
+//                System.out.println("Could not read from file");
+//            }
+//        }
 
 
         String[] lines = in.split("\n");
         int i = 0;
         for (String line: lines) {
 
+
+
             if (line.contains("#")) {
                 continue;
             }
 
-            line = replaceVariables(line);
+            line = line.replaceAll("\\r", "");
+
+            if (line.matches("[a-z0-9_]+ [-+*/^%]?= .*")){
+                String[] lineSplit = line.split("=");
+                line = lineSplit[0] + " = " + replaceVariables(lineSplit[1]);
+                assignVariables(line);
+
+            } else {
+                line = replaceVariables(line);
+            }
+            System.out.println(line);
+
+
 
             if (line.matches("\\s*while(.*).*")) {
                 // Call while function
@@ -65,6 +79,7 @@ public class Main {
     }
 
     private static void assignVariables(String in) {
+
             List<String> tokens = new ArrayList<>(Arrays.asList(in.split(" ")));
 
             String varName = tokens.get(0);
@@ -106,18 +121,13 @@ public class Main {
     }
 
     private static String replaceVariables(String in) {
-        in = in.replaceAll("\\r", "");
-        String regex = "[a-z0-9_]+ [-+*/^%]?= .*";
 
-        if (Pattern.matches(regex, in)){
-            assignVariables(in);
-        } else {
-            for (Map.Entry<String, String> entry: vars.entrySet()) {
-                if (in.contains(entry.getKey())) {
-                    in = in.replaceAll("\\b" + entry.getKey() + "\\b", entry.getValue());
-                }
+        for (Map.Entry<String, String> entry: vars.entrySet()) {
+            if (in.contains(entry.getKey())) {
+                in = in.replaceAll("\\b" + entry.getKey() + "\\b", entry.getValue());
             }
         }
+
         return in;
     }
 
