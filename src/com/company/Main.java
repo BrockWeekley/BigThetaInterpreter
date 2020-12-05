@@ -124,7 +124,8 @@ public class Main {
     private static void readIf(String in, String[] lines, int currentLineIndex) {
         String data = in;
         int j = currentLineIndex;
-        String condition = data.split("[\\(\\)]")[1];
+        String condition = data.replace("if ", "").replace(":", "");
+//        String condition = data.split("[\\(\\)]")[1];
         boolean result = determineStatement(condition);
         if (result) {
             while (true) {
