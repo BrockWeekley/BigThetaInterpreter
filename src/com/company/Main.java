@@ -17,7 +17,7 @@ public class Main {
     private static HashMap<String, String> vars = new HashMap<>();
 
     public static void main(String[] args) {
-        String in = "";
+        String in;
         while(true) {
             Scanner myObj = new Scanner(System.in);
             System.out.println("Welcome to the python interpreter, please enter the name of your file, followed by the .py extension.");
@@ -78,14 +78,14 @@ public class Main {
             String newValue;
             ArrayList<String> expressionTokens = new ArrayList<>();
             boolean isString = false;
-            if (tokens.get(3).contains("\"") && tokens.get(tokens.size() - 1).contains("\"")) {
+            if (tokens.get(2).contains("\"") && tokens.get(tokens.size() - 1).contains("\"")) {
                 for(int i = 2; i < tokens.size(); i++){
                     expressionTokens.add(tokens.get(i));
                 }
                 newValue = String.join(" ", expressionTokens);
                 isString = true;
             } else {
-                newValue = tokens.get(3);
+                newValue = tokens.get(2);
             }
 
             String operation = tokens.get(1);
