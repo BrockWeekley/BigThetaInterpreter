@@ -23,6 +23,7 @@ public class Main {
                 "    print('This won\'t run)\n" +
                 "else:\n" +
                 "    print('This will run')\n";
+
 //        while(true) {
 //            Scanner myObj = new Scanner(System.in);
 //            System.out.println("Welcome to the python interpreter, please enter the name of your file, followed by the .py extension.");
@@ -62,26 +63,38 @@ public class Main {
             line = replaceVariables(line);
         }
 
-        if (line.matches("\\s*while(.*).*")) {
+        if (line.matches("\\s*(while ).*")) {
             // Call while function
         }
 
-        if (line.matches("\\s*for(.*).*")) {
+        if (line.matches("\\s*(for ).*")) {
             // Call for function
         }
 
-        if (line.matches("\\s*if(.*).*")) {
+        if (line.matches("\\s*(if ).*")) {
             lineCount = readIf(lines, line, lineCount);
         }
 
-        if (line.matches("\\s*print(.*).*")) {
-            String printContent = line.substring(line.indexOf("(") + 1, line.lastIndexOf(")") - 1);
-            if (printContent.matches("((?<![\\\\])['\"])((?:.(?!(?<![\\\\])\\1))*.?)\\1")) {
-                System.out.println(printContent);
-            }
+        if (line.matches("\\s*(print\\(.*\\))"))
+        {
+            handlePrint(line);
         }
 
         return lineCount;
+    }
+
+    private static void handlePrint(String in) {
+        String printContent = in.substring(in.indexOf("(") + 1, in.lastIndexOf(")"));
+        if (printContent.contains("str(")) {
+            printContent = printContent.replaceAll("str\\(", "");
+            printContent = printContent.replaceAll("\\)", "");
+        }
+
+        if (printContent.contains("+")){
+            printContent = printContent.replaceAll("\\s*\\+\\s*", "");
+        }
+
+        System.out.println(printContent.replaceAll("\"",""));
     }
 
     private static void assignVariables(String in) {
