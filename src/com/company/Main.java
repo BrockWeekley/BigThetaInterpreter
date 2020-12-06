@@ -187,9 +187,9 @@ public class Main {
         String condition;
         int tabs = countTabs(line);
 
-        if (line.matches("if\\(.*\\):")) {
+        if (line.matches("\\s*if\\(.*\\):")) {
             condition = line.replace("if(", "").replace("):", "");
-        } else if (line.matches("if .*:")) {
+        } else if (line.matches("\\s*if .*:")) {
             condition = line.replace("if ", "").replace(":", "");
         } else {
             System.out.println("Syntax Error: Invalid format for if statement");
@@ -200,7 +200,6 @@ public class Main {
         boolean result = determineStatement(condition);
         if (result) {
             lineCount = trueIf(lines, tabs, lineCount);
-
         } else {
             int nextLocation = lineCount + 1;
             while( countTabs(lines[nextLocation]) > tabs ) {
