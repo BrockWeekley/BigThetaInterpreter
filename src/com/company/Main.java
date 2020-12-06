@@ -27,17 +27,17 @@ public class Main {
                 "else:\n" +
                 "    print('This will run')\n";
 
-//        while(true) {
-//            Scanner myObj = new Scanner(System.in);
-//            System.out.println("Welcome to the python interpreter, please enter the name of your file, followed by the .py extension.");
-//            String filename = myObj.nextLine();
-//            try {
-//                in = Files.readString(Path.of(filename));
-//                break;
-//            } catch (IOException e) {
-//                System.out.println("Could not read from file");
-//            }
-//        }
+        while(true) {
+            Scanner myObj = new Scanner(System.in);
+            System.out.println("Welcome to the python interpreter, please enter the name of your file, followed by the .py extension.");
+            String filename = myObj.nextLine();
+            try {
+                in = Files.readString(Path.of(filename));
+                break;
+            } catch (IOException e) {
+                System.out.println("Could not read from file");
+            }
+        }
 
         String[] lines = in.split("\n");
         for (int i = 0; i < lines.length - 1;) {
@@ -57,11 +57,10 @@ public class Main {
     private static int interpretLine(String[] lines, String line, int lineCount) {
         line = line.replaceAll("\\r", "");
         line = line.replaceAll("\\t", "    ");
-        if (line.matches("[a-z0-9_]+ [-+*/^%]?= .*")){
+        if (line.matches("[a-zA-Z0-9_]+ [-+*/^%]?= .*")){
             String[] lineSplit = line.split("=");
             line = lineSplit[0] + "=" + replaceVariables(lineSplit[1]);
             assignVariables(line);
-
         } else {
             line = replaceVariables(line);
         }
@@ -134,7 +133,7 @@ public class Main {
                 }
                 vars.replace(varName, newValue);
             } else {
-                if (tokens.size() > 3) {
+                if (tokens.size() > 3 && !isString) {
                     String expression = in.substring(in.indexOf("=") + 2);
                     expression = expression.replaceAll("\\s", "");
                     newValue = String.valueOf(interpretMath(expression));
@@ -143,6 +142,7 @@ public class Main {
                     vars.put(varName, newValue);
                 } else {
                     System.out.println("Syntax Error: Variable " + varName + " not defined.");
+//                    System.exit(0);
                 }
             }
             System.out.println(varName + ": " + vars.get(varName));
@@ -184,6 +184,7 @@ public class Main {
             condition = line.replace("if ", "").replace(":", "");
         } else {
             System.out.println("Syntax Error: Invalid format for if statement");
+//            System.exit(0);
             return lineCount;
         }
 
@@ -193,44 +194,53 @@ public class Main {
             int lineTabs = tabs + 1;
             while (lineTabs >= tabs + 1) {
                 lineTabs = countTabs(lines[lineCount]);
-//                System.out.println("True line worked!");
                 interpretLine(lines, lines[lineCount], lineCount);
+                lineCount++;
+            }
+            while (lineTabs >= tabs + 1 && !lines[lineCount].matches("\\s*elif\\(.*\\):") &&
+            !lines[lineCount].matches("\\s*elif .*:") && !lines[lineCount].matches("\\s*else\\(.*\\):") &&
+            !lines[lineCount].matches("\\s*else .*:")) {
+                lineTabs = countTabs(lines[lineCount]);
                 lineCount++;
             }
         } else {
             int nextLocation = lineCount + 1;
             while( countTabs(lines[nextLocation]) > tabs ) {
                 nextLocation++;
-            }
-            System.out.println("Next Line to run: " + nextLocation);
+                System.out.println("Next Line to run: " + nextLocation);
 
+                if ((lines[nextLocation].matches("\\s*elif\\(.*\\):") || (lines[nextLocation].matches("\\s*elif .*:")))) {
+                    //check condition statement
+                    if (line.matches("elif\\(.*\\):")) {
+                        condition = line.replace("elif(", "").replace("):", "");
+                    } else if (line.matches("elif .*:")) {
+                        condition = line.replace("elif ", "").replace(":", "");
+                    } else {
+                        System.out.println("Syntax Error: Invalid format for elif statement");
+//                        System.exit(0);
+                        return nextLocation;
+                    }
 
-            if((lines[nextLocation].matches("\\s*elif\\(.*\\):")||(lines[nextLocation].matches("\\s*elif .*:")))) {
-            //check condition statement
-                if (line.matches("elif\\(.*\\):")) {
-                    condition = line.replace("elif(", "").replace("):", "");
-                } else if (line.matches("elif .*:")) {
-                    condition = line.replace("elif ", "").replace(":", "");
-                } else {
-                    System.out.println("Syntax Error: Invalid format for elif statement");
-                    return lineCount;
+                    if (determineStatement(condition)) {
+                        nextLocation++;
+                        int lineTabs = tabs + 1;
+                        while (lineTabs >= tabs + 1) {
+                            lineTabs = countTabs(lines[nextLocation]);
+                            interpretLine(lines, lines[nextLocation], nextLocation);
+                            nextLocation++;
+                        }
+                    }
+
                 }
-
-                if(determineStatement(condition))
-                {
-                    lineCount++;
+                if (lines[nextLocation].matches("\\s*else\\(.*\\):") || (lines[nextLocation].matches("\\s*else .*:"))) {
                     int lineTabs = tabs + 1;
                     while (lineTabs >= tabs + 1) {
-                        lineTabs = countTabs(lines[lineCount]);
-//                        System.out.println("True line worked!");
-                        interpretLine(lines, lines[lineCount], lineCount);
-                        lineCount++;
+                        lineTabs = countTabs(lines[nextLocation]);
+                        interpretLine(lines, lines[nextLocation], nextLocation);
+                        nextLocation++;
                     }
+                    return nextLocation;
                 }
-
-            }
-            if (lines[nextLocation].matches("\\s*else\\(.*\\):")||(lines[nextLocation].matches("\\s*else .*:"))) { //if the next line is an elif) {
-            //run code until tabs get >
             }
 
         }
