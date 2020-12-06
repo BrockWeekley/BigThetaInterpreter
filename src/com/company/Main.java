@@ -17,55 +17,76 @@ public class Main {
     private static HashMap<String, String> vars = new HashMap<>();
 
     public static void main(String[] args) {
-        String in;
-        while(true) {
-            Scanner myObj = new Scanner(System.in);
-            System.out.println("Welcome to the python interpreter, please enter the name of your file, followed by the .py extension.");
-            String filename = myObj.nextLine();
-            try {
-                in = Files.readString(Path.of(filename));
-                break;
-            } catch (IOException e) {
-                System.out.println("Could not read from file");
-            }
-        }
+        String in = "y = 6 \n" +
+                "x = (y + y) % 2\n" +
+                "if(x==0):\n" +
+                "    print('This won\'t run)\n" +
+                "else:\n" +
+                "    print('This will run')\n";
 
+//        while(true) {
+//            Scanner myObj = new Scanner(System.in);
+//            System.out.println("Welcome to the python interpreter, please enter the name of your file, followed by the .py extension.");
+//            String filename = myObj.nextLine();
+//            try {
+//                in = Files.readString(Path.of(filename));
+//                break;
+//            } catch (IOException e) {
+//                System.out.println("Could not read from file");
+//            }
+//        }
 
         String[] lines = in.split("\n");
-        int i = 0;
-        for (String line: lines) {
-
-            if (line.contains("#")) {
+        for (int i = 0; i < lines.length - 1;) {
+            if (lines[i].matches("#.*")) {
                 continue;
             }
-
-            line = replaceVariables(line);
-
-            if (line.matches("\\s*(while ).*")) {
-                // Call while function
+            int j = interpretLine(lines, lines[i], i);
+            if (i == j) {
+                i++;
+            } else {
+                i = j;
             }
-
-            if (line.matches("\\s*(for ).*")) {
-                // Call for function
-            }
-
-            if (line.matches("\\s*(if ).*")) {
-                readIf(line, lines, i);
-            }
-            if (line.matches("\\s*(print\\(.*\\))"))
-            {
-                handlePrint(line);
-            }
-            i++;
         }
 
+    }
+
+    private static int interpretLine(String[] lines, String line, int lineCount) {
+        line = line.replaceAll("\\r", "");
+        line = line.replaceAll("\\t", "    ");
+        if (line.matches("[a-z0-9_]+ [-+*/^%]?= .*")){
+            String[] lineSplit = line.split("=");
+            line = lineSplit[0] + "=" + replaceVariables(lineSplit[1]);
+            assignVariables(line);
+
+        } else {
+            line = replaceVariables(line);
+        }
+
+        if (line.matches("\\s*(while ).*")) {
+            // Call while function
+        }
+
+        if (line.matches("\\s*(for ).*")) {
+            // Call for function
+        }
+
+        if (line.matches("\\s*(if ).*")) {
+            lineCount = readIf(lines, line, lineCount);
+        }
+
+        if (line.matches("\\s*(print\\(.*\\))"))
+        {
+            handlePrint(line);
+        }
+
+        return lineCount;
     }
 
     private static void handlePrint(String in) {
         String printContent = in.substring(in.indexOf("(") + 1, in.lastIndexOf(")"));
         if (printContent.contains("str(")) {
-            printContent = printContent.replaceAll("str\\(", "");
-            printContent = printContent.replaceAll("\\)", "");
+            printContent = printContent.replaceAll("str\\(", "").replaceAll("\\)", "");
         }
 
         if (printContent.contains("+")){
@@ -76,6 +97,7 @@ public class Main {
     }
 
     private static void assignVariables(String in) {
+
             List<String> tokens = new ArrayList<>(Arrays.asList(in.split(" ")));
 
             String varName = tokens.get(0);
@@ -103,76 +125,84 @@ public class Main {
             if (previousValue != null){
                 if (!operation.equals("=")) {
                     if (!isString) {
-                        newValue = String.valueOf(performOperation(operation.substring(0, 0), Double.parseDouble(previousValue), Double.parseDouble(newValue)));
+                        newValue = String.valueOf(performOperation(operation.substring(0, 1), Double.parseDouble(previousValue), Double.parseDouble(newValue)));
                     }
                 }
                 vars.replace(varName, newValue);
             } else {
+                if (tokens.size() > 3) {
+                    String expression = in.substring(in.indexOf("=") + 2);
+                    expression = expression.replaceAll("\\s", "");
+                    newValue = String.valueOf(interpretMath(expression));
+                }
                 if (operation.equals("=")) {
                     vars.put(varName, newValue);
                 } else {
                     System.out.println("Syntax Error: Variable " + varName + " not defined.");
                 }
             }
+            System.out.println(varName + ": " + vars.get(varName));
+    }
+
+    private static int countTabs(String line) {
+        int spaceCount = 0;
+        int tabCount = 0;
+        for (char c : line.toCharArray()) {
+            if (c == ' ') {
+                spaceCount++;
+            } else {
+                break;
+            }
+            if (spaceCount == 4) {
+                tabCount += 1;
+                spaceCount = 0;
+            }
+        }
+        return tabCount;
     }
 
     private static String replaceVariables(String in) {
-        in = in.replaceAll("\\r", "");
-        String regex = "[a-z0-9_]+ [-+*/^%]?= .*";
-
-        if (Pattern.matches(regex, in)){
-            assignVariables(in);
-        } else {
-            for (Map.Entry<String, String> entry: vars.entrySet()) {
-                if (in.contains(entry.getKey())) {
-                    in = in.replaceAll("\\b" + entry.getKey() + "\\b", entry.getValue());
-                }
+        for (Map.Entry<String, String> entry: vars.entrySet()) {
+            if (in.contains(entry.getKey())) {
+                in = in.replaceAll("\\b" + entry.getKey() + "\\b", entry.getValue());
             }
         }
         return in;
     }
 
-    private static void readIf(String in, String[] lines, int currentLineIndex) {
-        String data = in;
-        int j = currentLineIndex;
-        String condition = data.replace("if ", "").replace(":", "");
-//        String condition = data.split("[\\(\\)]")[1];
+    private static int readIf(String[] lines, String line, int lineCount) {
+        String condition;
+        int tabs = countTabs(line);
+
+        if (line.matches("if\\(.*\\):")) {
+            condition = line.replace("if(", "").replace("):", "");
+        } else if (line.matches("if .*:")) {
+            condition = line.replace("if ", "").replace(":", "");
+        } else {
+            System.out.println("Syntax Error: Invalid format for if statement");
+            return lineCount;
+        }
+
         boolean result = determineStatement(condition);
         if (result) {
-            while (true) {
-                data = lines[j + 1];
-                j = currentLineIndex + 1;
-                //end if with blank line or an else:
-                if (data.equals("")) {
-                    break;
-                } else if (!data.contains("else")) {
-                    //execute(data);
-                    System.out.println("\nnow executing " + data);
-                } else {
-                    break;
-                }
+            lineCount++;
+            int lineTabs = tabs + 1;
+            while (lineTabs >= tabs + 1) {
+                lineTabs = countTabs(lines[lineCount]);
+                System.out.println("True line worked!");
+//                interpretLine(lines, lines[lineCount], lineCount);
+                lineCount++;
             }
         } else {
-            while (true) {
-                data = lines[j + 1];
-                j = currentLineIndex + 1;
-                if (data.contains("else:")) {
-                    data = lines[j + 1];
-                    j = currentLineIndex + 1;
-                    // execute(data);
-                    System.out.println("\nnow executing " + data);
-                } else if (data.equals("")) {
-                    break;
-                }
-            }
+
         }
+
+        return lineCount;
     }
 
-    public static double interpretMath(String in){
+    private static double interpretMath(String in){
         String[] mathStrings = in.split("((?<=[-+*/%^])|(?=[-+*/%^]))(?![^\\(\\[]*[\\]\\)])((?<=[^\\d-])|(?=[^\\d-]))");
         //Assuming that there can be no nested parens (otherwise, you can't use a Java Regex for this task because recursive matching is not supported)
-
-        System.out.print(Arrays.toString(mathStrings));
 
         double result = 0;
         String operation = "";
@@ -252,37 +282,37 @@ public class Main {
         {
             double x = Double.parseDouble(line.split("<")[0]);
             double y = Double.parseDouble(line.split("<")[1]);
-            return x<y;
+            return x < y;
         }
         else if(line.matches("\\d*\\.*\\d*<=\\d*\\.*\\d*"))
         {
             double x = Double.parseDouble(line.split("<=")[0]);
             double y = Double.parseDouble(line.split("<=")[1]);
-            return x<=y;
+            return x <= y;
         }
         else if(line.matches("\\d*\\.*\\d*>\\d*\\.*\\d*"))
         {
             double x = Double.parseDouble(line.split(">")[0]);
             double y = Double.parseDouble(line.split(">")[1]);
-            return x>y;
+            return x > y;
         }
         else if(line.matches("\\d*\\.*\\d*>=\\d*\\.*\\d*"))
         {
             double x = Double.parseDouble(line.split(">=")[0]);
             double y = Double.parseDouble(line.split(">=")[1]);
-            return x>=y;
+            return x >= y;
         }
         else if(line.matches("\\d*\\.*\\d*==\\d*\\.*\\d*"))
         {
             double x = Double.parseDouble(line.split("==")[0]);
             double y = Double.parseDouble(line.split("==")[1]);
-            return x<=y;
+            return x == y;
         }
         else if(line.matches("\\d*\\.*\\d*!=\\d*\\.*\\d*"))
         {
             double x = Double.parseDouble(line.split("!=")[0]);
             double y = Double.parseDouble(line.split("!=")[1]);
-            return x!=y;
+            return x != y;
         }
 
         return false;
