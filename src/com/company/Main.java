@@ -19,10 +19,10 @@ public class Main {
     public static void main(String[] args) {
         String in = "y = 6 \n" +
                 "x = (y + y) % 2\n" +
-                "if(x==y):\n" +
+                "if(x==0):\n" +
                 "    print('This won\'t run)\n" +
                 "else:\n" +
-                "   print('This will run')\n";
+                "    print('This will run')\n";
 //        while(true) {
 //            Scanner myObj = new Scanner(System.in);
 //            System.out.println("Welcome to the python interpreter, please enter the name of your file, followed by the .py extension.");
@@ -40,14 +40,19 @@ public class Main {
             if (lines[i].matches("#.*")) {
                 continue;
             }
-            i = interpretLine(lines, lines[i], i);
+            int j = interpretLine(lines, lines[i], i);
+            if (i == j) {
+                i++;
+            } else {
+                i = j;
+            }
         }
 
     }
 
     private static int interpretLine(String[] lines, String line, int lineCount) {
         line = line.replaceAll("\\r", "");
-
+        line = line.replaceAll("\\t", "    ");
         if (line.matches("[a-z0-9_]+ [-+*/^%]?= .*")){
             String[] lineSplit = line.split("=");
             line = lineSplit[0] + "=" + replaceVariables(lineSplit[1]);
@@ -127,19 +132,35 @@ public class Main {
             System.out.println(varName + ": " + vars.get(varName));
     }
 
-    private static String replaceVariables(String in) {
+    private static int countTabs(String line) {
+        int spaceCount = 0;
+        int tabCount = 0;
+        for (char c : line.toCharArray()) {
+            if (c == ' ') {
+                spaceCount++;
+            } else {
+                break;
+            }
+            if (spaceCount == 4) {
+                tabCount += 1;
+                spaceCount = 0;
+            }
+        }
+        return tabCount;
+    }
 
+    private static String replaceVariables(String in) {
         for (Map.Entry<String, String> entry: vars.entrySet()) {
             if (in.contains(entry.getKey())) {
                 in = in.replaceAll("\\b" + entry.getKey() + "\\b", entry.getValue());
             }
         }
-
         return in;
     }
 
     private static int readIf(String[] lines, String line, int lineCount) {
         String condition;
+        int tabs = countTabs(line);
 
         if (line.matches("if\\(.*\\):")) {
             condition = line.replace("if(", "").replace("):", "");
@@ -153,13 +174,15 @@ public class Main {
         boolean result = determineStatement(condition);
         if (result) {
             lineCount++;
+            int lineTabs = tabs + 1;
+            while (lineTabs >= tabs + 1) {
+                lineTabs = countTabs(lines[lineCount]);
+                System.out.println("True line worked!");
+//                interpretLine(lines, lines[lineCount], lineCount);
+                lineCount++;
+            }
         } else {
-            String hi = "if(6==5):" +
-                            "print('Hello')" +
-                        "if(5==5):" +
-                            "print('Hello')" +
-                        "else:" +
-                            "print('hi')";
+
         }
 
         return lineCount;
