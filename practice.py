@@ -60,6 +60,8 @@ while i != 1:
 
     if 3 < 6:
         print('You should always see this, 3 is less than 6')
+    if 3 < 6 and 1 < 2:
+        print('This test of and should be successful')
 
     var1 += 1
     var2 -= 1
