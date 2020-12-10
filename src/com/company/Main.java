@@ -71,7 +71,7 @@ public class Main {
         }
 
         if (line.matches("\\s*while.*")) {
-            // Call while function
+            whileLoop(lines, line, lineCount);
         }
 
         if (line.matches("\\s*for.*")) {
@@ -82,8 +82,7 @@ public class Main {
             lineCount = readIf(lines, line, lineCount);
         }
 
-        if (line.matches("\\s*(print\\(.*\\))"))
-        {
+        if (line.matches("\\s*(print\\(.*\\))")) {
             handlePrint(line);
         }
 
@@ -91,34 +90,29 @@ public class Main {
     }
 
 
-    private static void whileLoop(String line,int whileLine,String[] lines)
+    private static void whileLoop(String[] lines, String line, int whileLine)
     {
-        if(line.matches(".*while\\(.*\\):.*")){ //if we have a valid for loop sent to this function
+        if (line.matches("\\s*while\\(.*\\):")){ //if we have a valid for loop sent to this function
             line = line.replace("while(","");
-            line = line.substring(0,line.lastIndexOf(")")); // make line just the conditional statement
-            int temp; //used to hold the starting line of the loop to be ran.
-            //send the statement to be checked each loop.
-            while(determineStatement(line)) { //while(conditional statement)
-                //
-                // Nested while, I know it's ugly. it's needed because we don't know where the while loop will end.
-                // So we run each loop until we hit a line with less tabs that's not blank.
-                //
-                //start each loop on the correct count.
-                temp = whileLine;
-                int whileTabs = countTabs(lines[temp]); // count tabs of while statement
-                while (countTabs(lines[temp])>whileTabs&&!lines[temp].equals("")) { // runs each line of the while loop, check if tabs is greater and it's not a blank line
-                    temp = interpretLine(lines,lines[temp],temp); //run each line. If an if check moves it, we need to also move to wherever that is.
+            line = line.substring(0, line.lastIndexOf(")")); // make line just the conditional statement
 
-                    temp++;
-                }
-
-
-            }
-
-
+        } else if (line.matches("\\s*while.*:")) {
+            line = line.replace("while ","");
+            line = line.substring(0, line.lastIndexOf(":"));
         }
         else{
-            System.out.println("While statement syntax error :c");
+            System.out.println("Syntax Error: Invalid format for while statement");
+        }
+
+        int temp;
+        while(determineStatement(replaceVariables(lines[whileLine].replace("while ", "").substring(0, lines[whileLine].lastIndexOf(":"))))) {
+            temp = whileLine;
+            int whileTabs = countTabs(lines[temp]);
+            temp++;
+            while (countTabs(lines[temp]) > whileTabs && !lines[temp].equals("")) {
+                temp = interpretLine(lines, lines[temp], temp);
+                temp++;
+            }
         }
 
 
