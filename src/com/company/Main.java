@@ -44,7 +44,9 @@ public class Main {
 
         in = in.replaceAll("\\r", "");
         String[] lines = in.split("\n");
-        for (int i = 0; i < lines.length - 1;) {
+//        for (int i = 0; i < lines.length;) {
+        int i = 0;
+        while(i < lines.length) {
             if (lines[i].matches("\\s*#.*")) {
                 i++;
                 continue;
@@ -61,7 +63,7 @@ public class Main {
 
     private static int interpretLine(String[] lines, String line, int lineCount) {
         line = line.replaceAll("\\t", "    ");
-        if (line.matches("[a-zA-Z0-9_]+ [-+*/^%]?= .*")){
+        if (line.matches("\\s*[a-zA-Z0-9_]+ [-+*/^%]?= .*")){
             String[] lineSplit = line.split("=");
             line = lineSplit[0] + "=" + replaceVariables(lineSplit[1]);
             assignVariables(line);
@@ -103,15 +105,19 @@ public class Main {
             System.out.println("Syntax Error: Invalid format for while statement");
         }
 
-        int temp;
-        while(determineStatement(replaceVariables(lines[whileLine].replace("while ", "").substring(0, lines[whileLine].lastIndexOf(":"))))) {
-            temp = whileLine;
-            int whileTabs = countTabs(lines[temp]);
-            temp++;
+        int temp =  whileLine;
+        int whileTabs = countTabs(lines[temp]);
+        boolean flag = determineStatement(line);
+        while(flag) {
+            temp = whileLine + 1;
             while (countTabs(lines[temp]) > whileTabs && !lines[temp].equals("")) {
                 temp = interpretLine(lines, lines[temp], temp);
                 temp++;
             }
+
+            String whileStmt = lines[whileLine].replaceAll("while ", "").replace(":", "");
+            System.out.println(replaceVariables(whileStmt));
+            flag = determineStatement(whileStmt);
         }
 
 
@@ -119,7 +125,7 @@ public class Main {
 
 
     private static void handlePrint(String in) {
-        String printContent = in.substring(in.indexOf("(") + 2, in.lastIndexOf(")") - 1);
+        String printContent = in.substring(in.indexOf("(") + 1, in.lastIndexOf(")"));
         if (printContent.contains("str(")) {
             printContent = printContent.replaceAll("str\\(", "");
             printContent = printContent.replaceAll("\\)", "");
@@ -134,52 +140,54 @@ public class Main {
     }
 
     private static void assignVariables(String in) {
+        while (in.matches(" .*")) {
+            in = in.substring(1);
+        }
+        List<String> tokens = new ArrayList<>(Arrays.asList(in.split(" ")));
 
-            List<String> tokens = new ArrayList<>(Arrays.asList(in.split(" ")));
+        String varName = tokens.get(0);
+        String previousValue;
+        try {
+            previousValue = vars.get(varName);
+        } catch(NullPointerException e) {
+            previousValue = null;
+        }
 
-            String varName = tokens.get(0);
-            String previousValue;
-            try {
-                previousValue = vars.get(varName);
-            } catch(NullPointerException e) {
-                previousValue = null;
+        String newValue;
+        ArrayList<String> expressionTokens = new ArrayList<>();
+        boolean isString = false;
+        if (tokens.get(2).contains("\"") && tokens.get(tokens.size() - 1).contains("\"")) {
+            for(int i = 2; i < tokens.size(); i++){
+                expressionTokens.add(tokens.get(i));
             }
+            newValue = String.join(" ", expressionTokens);
+            isString = true;
+        } else {
+            newValue = String.valueOf(interpretMath(tokens.get(2)));
+        }
 
-            String newValue;
-            ArrayList<String> expressionTokens = new ArrayList<>();
-            boolean isString = false;
-            if (tokens.get(2).contains("\"") && tokens.get(tokens.size() - 1).contains("\"")) {
-                for(int i = 2; i < tokens.size(); i++){
-                    expressionTokens.add(tokens.get(i));
+        String operation = tokens.get(1);
+        if (previousValue != null){
+            if (!operation.equals("=")) {
+                if (!isString) {
+                    newValue = String.valueOf(performOperation(operation.substring(0, 1), Double.parseDouble(previousValue), Double.parseDouble(newValue)));
                 }
-                newValue = String.join(" ", expressionTokens);
-                isString = true;
+            }
+            vars.replace(varName, newValue);
+        } else {
+            if (tokens.size() > 3 && !isString) {
+                String expression = in.substring(in.indexOf("=") + 2);
+                expression = expression.replaceAll("\\s", "");
+                newValue = String.valueOf(interpretMath(expression));
+            }
+            if (operation.equals("=")) {
+                vars.put(varName, newValue);
             } else {
-                newValue = String.valueOf(interpretMath(tokens.get(2)));
+                System.out.println("Syntax Error: Variable " + varName + " not defined.");
+//                System.exit(0);
             }
-
-            String operation = tokens.get(1);
-            if (previousValue != null){
-                if (!operation.equals("=")) {
-                    if (!isString) {
-                        newValue = String.valueOf(performOperation(operation.substring(0, 1), Double.parseDouble(previousValue), Double.parseDouble(newValue)));
-                    }
-                }
-                vars.replace(varName, newValue);
-            } else {
-                if (tokens.size() > 3 && !isString) {
-                    String expression = in.substring(in.indexOf("=") + 2);
-                    expression = expression.replaceAll("\\s", "");
-                    newValue = String.valueOf(interpretMath(expression));
-                }
-                if (operation.equals("=")) {
-                    vars.put(varName, newValue);
-                } else {
-                    System.out.println("Syntax Error: Variable " + varName + " not defined.");
-//                    System.exit(0);
-                }
-            }
-            System.out.println(varName + ": " + vars.get(varName));
+        }
+        System.out.println(varName + ": " + vars.get(varName));
     }
 
     private static int countTabs(String line) {
