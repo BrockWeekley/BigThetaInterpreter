@@ -15,7 +15,7 @@ public class Main {
 //    }};
 
     private static HashMap<String, String> vars = new HashMap<>();
-
+    private static boolean containsBreak = false;
     public static void main(String[] args) {
         String in = "y = 6 \n" +
                 "x = (y + y) % 2\n" +
@@ -296,15 +296,19 @@ public class Main {
 //            System.exit(0);
             return lineCount;
         }
-
+        containsBreak = false;
         boolean result = determineStatement(condition);
         if (result) {
-            lineCount = trueIf(lines, tabs, lineCount);
+            lineCount = trueIf(lines, tabs, lineCount, containsBreak);
         } else {
             int nextLocation = lineCount + 1;
             while( countTabs(lines[nextLocation]) > tabs ) {
                 nextLocation++;
                 line = lines[nextLocation];
+
+                if (!containsBreak) {
+                    containsBreak = line.contains("break");
+                }
                 if ((line.matches("\\s*elif\\(.*\\):") || (line.matches("\\s*elif .*:")))) {
 
                     if (line.matches("\\s*elif\\(.*\\):")) {
@@ -318,7 +322,7 @@ public class Main {
                     }
                     condition = replaceVariables(condition);
                     if (determineStatement(condition)) {
-                        lineCount = trueIf(lines, tabs, nextLocation);
+                        lineCount = trueIf(lines, tabs, nextLocation, containsBreak);
                         return lineCount;
                     } else {
                         nextLocation++;
@@ -330,7 +334,9 @@ public class Main {
                     int lineTabs = tabs + 1;
                     while (lineTabs >= tabs + 1) {
                         lineTabs = countTabs(lines[nextLocation]);
-                        interpretLine(lines, lines[nextLocation], nextLocation);
+                        if (!containsBreak) {
+                            interpretLine(lines, lines[nextLocation], nextLocation);
+                        }
                         nextLocation++;
                     }
                     return nextLocation;
@@ -342,7 +348,7 @@ public class Main {
         return lineCount;
     }
 
-    private static int trueIf(String[] lines, int tabs, int lineCount) {
+    private static int trueIf(String[] lines, int tabs, int lineCount, boolean containsBreak) {
         lineCount++;
         int lineTabs;
         while (true) {
@@ -350,7 +356,9 @@ public class Main {
             if (lineTabs < tabs + 1) {
                 break;
             }
-            interpretLine(lines, lines[lineCount], lineCount);
+            if (!containsBreak) {
+                interpretLine(lines, lines[lineCount], lineCount);
+            }
             lineCount++;
         }
 
