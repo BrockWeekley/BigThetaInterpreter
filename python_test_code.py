@@ -24,8 +24,8 @@ while charmender_HP > 0 and squirtle_HP > 0:
     else:
         charmender_HP -= squirtle_attack
         print("Squirtle faught back and did "+str(squirtle_attack)+" damage")
-        #print("Charmender got bitten! HP is: "+str(squirtle_HP)) - assuming this is a mistake?
-        print("Charmender got bitten! HP is: "+str(charmender_HP))
+        print("Charmender got bitten! HP is: "+str(squirtle_HP))
+        # print("Charmender got bitten! HP is: "+str(charmender_HP))
         turn = 1
 
 # Print winner pokemon

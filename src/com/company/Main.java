@@ -76,7 +76,7 @@ public class Main {
         }
 
         if (line.matches("\\s*for.*")) {
-            // Call for function
+            lineCount = forLoop(lines, line, lineCount);
         }
 
         if (line.matches("\\s*if.*")) {
@@ -105,7 +105,7 @@ public class Main {
             System.out.println("Syntax Error: Invalid format for while statement");
         }
 
-        int temp =  whileLine;
+        int temp = whileLine;
         int whileTabs = countTabs(lines[temp]);
         boolean flag = determineStatement(line);
         while(flag) {
@@ -123,12 +123,71 @@ public class Main {
 
     }
 
+    private static int forLoop(String[] lines, String line, int forLine) {
+        if (line.matches("\\s*for\\(.*\\):")){ //if we have a valid for loop sent to this function
+            line = line.replace("for(","");
+            line = line.substring(0, line.lastIndexOf(")")); // make line just the conditional statement
+
+        } else if (line.matches("\\s*for.*:")) {
+            line = line.replace("for ","");
+            line = line.substring(0, line.lastIndexOf(":"));
+        }
+        else{
+            System.out.println("Syntax Error: Invalid format for for statement");
+        }
+
+        if (line.contains("int(")) {
+            Integer toInt = (int) interpretMath(line.substring(line.indexOf("int(") + 4, line.indexOf(")")));
+            line = line.replaceAll("int\\(.*?\\)", toInt.toString());
+            line = line.replaceAll("'", "");
+            line = line.replaceAll("\"", "");
+        }
+
+        String forVariable = line.substring(0, line.indexOf("in") - 1);
+
+        line = line.substring(line.indexOf("in") + 2, line.lastIndexOf(")"));
+        line = line.replace("range(", "");
+        double interpretLower = interpretMath(line.substring(1, line.indexOf(",")));
+        double interpretUpper = interpretMath(line.substring(line.indexOf(",") + 2));
+        int lower = (int) Math.floor(interpretLower);
+        int upper = (int) Math.floor(interpretUpper);
+
+        if (vars.containsKey(forVariable.replaceAll(" ", ""))) {
+            String assignmentStatement = forVariable + " += " + lower;
+            assignVariables(assignmentStatement);
+        } else {
+            String assignmentStatement = forVariable + " = " + lower;
+            assignVariables(assignmentStatement);
+        }
+
+        int temp = forLine;
+        int forTabs = countTabs(lines[temp]);
+        for (int i = lower; i < upper; i++) {
+            temp = forLine + 1;
+            while (countTabs(lines[temp]) > forTabs && !lines[temp].equals("")) {
+                temp = interpretLine(lines, lines[temp], temp);
+                temp++;
+            }
+        }
+
+        return temp;
+    }
 
     private static void handlePrint(String in) {
         String printContent = in.substring(in.indexOf("(") + 1, in.lastIndexOf(")"));
         if (printContent.contains("str(")) {
             printContent = printContent.replaceAll("str\\(", "");
             printContent = printContent.replaceAll("\\)", "");
+            printContent = replaceVariables(printContent);
+        }
+
+        if (printContent.contains("int(")) {
+            printContent = printContent.replaceAll("int\\(", "");
+            printContent = printContent.replaceAll("\\..*?\\)", "");
+
+            printContent = printContent.replaceAll("'", "");
+            printContent = printContent.replaceAll("\"", "");
+
             printContent = replaceVariables(printContent);
         }
 
@@ -212,6 +271,11 @@ public class Main {
             if (in.contains(entry.getKey())) {
                 if (!in.matches("\\s*print\\(\'.*"+ entry.getKey() +".*\'\\)") &&
                         !in.matches("\\s*print\\(\".*"+ entry.getKey() +".*\"\\)")) {
+                    if (in.contains("in")) {
+                        if (in.substring(0, in.indexOf("in")).contains(entry.getKey())) {
+                            continue;
+                        }
+                    }
                     in = in.replaceAll("\\b" + entry.getKey() + "\\b", entry.getValue());
                 }
             }
@@ -443,7 +507,7 @@ public class Main {
             double y = Double.parseDouble(line.split("!=")[1]);
             return x != y;
         }
-        else if(line.matches("true"))
+        else if(line.matches("True"))
             return true;
         else
             return false;
