@@ -30,7 +30,6 @@ public class Main {
                 "\n" +
                 "y = 4\n" +
                 "print(y)";
-
         while(true) {
             Scanner myObj = new Scanner(System.in);
             System.out.println("Welcome to the python interpreter, please enter the name of your file, followed by the .py extension.");
@@ -376,32 +375,35 @@ public class Main {
         return result;
     }
 
-    private static boolean determineStatement(String line)
-    {
+    private static boolean determineStatement(String line) {
         if (line.contains("and") || line.contains("or")){
-            String[] statementArray = line.split("((?<= and)|(?= and))|((?<= or)|(?= or))");
-            System.out.println(Arrays.toString(statementArray));
+            String[] statementArray = line.split("(((?<= and)|(?= and))|((?<= or)|(?= or)))(?![^()]*\\))");
+
             int stateNum = 0;
             boolean wholeCond = false;
             for (String statement : statementArray){
+
+                if (statement.matches("\\s*\\(([^()]+)\\)")){
+                    statementArray[stateNum] = String.valueOf(determineStatement(statement.replaceAll("\\s*[()]", "")));
+                }
                 statement = statement.replaceAll("\\s","");
                 if (statement.matches("and")){
                     try{
-                        wholeCond = determineStatement(statementArray[stateNum - 1]) &&
-                                determineStatement(statementArray[stateNum + 1]);
+                        wholeCond = determineStatement(statementArray[stateNum - 1].replaceAll("\\s*[()]", ""))
+                                && determineStatement(statementArray[stateNum + 1].replaceAll("\\s*[()]", ""));
                     }
                     catch (ArrayIndexOutOfBoundsException e){
-                        System.out.println("Syntax Error: Invalid format for condition statement");
+                        System.out.println("Syntax Error: Invalid format for and condition statement");
                         System.exit(0);
                     }
                 }
                 else if (statement.matches("or")){
                     try{
-                        wholeCond = determineStatement(statementArray[stateNum - 1]) ||
-                                determineStatement(statementArray[stateNum + 1]);
+                        wholeCond = determineStatement(statementArray[stateNum - 1].replaceAll("\\s*[()]", ""))
+                                || determineStatement(statementArray[stateNum + 1].replaceAll("\\s*[()]", ""));
                     }
                     catch (ArrayIndexOutOfBoundsException e){
-                        System.out.println("Syntax Error: Invalid format for condition statement");
+                        System.out.println("Syntax Error: Invalid format for or condition statement");
                         System.exit(0);
                     }
                 }
@@ -411,13 +413,10 @@ public class Main {
                 }
                 stateNum++;
             }
-
-            if (wholeCond) {
+            if (wholeCond)
                 return true;
-            }
-            else {
+            else
                 return false;
-            }
         }
         else{
             line = line.replaceAll("\\s","");
@@ -457,8 +456,10 @@ public class Main {
                 double y = Double.parseDouble(line.split("!=")[1]);
                 return x != y;
             }
-
-            return false;
+            else if(line.matches("true"))
+                return true;
+            else
+                return false;
         }
     }
 }
