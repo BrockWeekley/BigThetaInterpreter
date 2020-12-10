@@ -72,7 +72,7 @@ public class Main {
         }
 
         if (line.matches("\\s*while.*")) {
-            whileLoop(lines, line, lineCount);
+            lineCount = whileLoop(lines, line, lineCount);
         }
 
         if (line.matches("\\s*for.*")) {
@@ -91,7 +91,7 @@ public class Main {
     }
 
 
-    private static void whileLoop(String[] lines, String line, int whileLine)
+    private static int whileLoop(String[] lines, String line, int whileLine)
     {
         if (line.matches("\\s*while\\(.*\\):")){ //if we have a valid for loop sent to this function
             line = line.replace("while(","");
@@ -116,10 +116,10 @@ public class Main {
             }
 
             String whileStmt = lines[whileLine].replaceAll("while ", "").replace(":", "");
-            System.out.println(replaceVariables(whileStmt));
             flag = determineStatement(replaceVariables(whileStmt));
         }
 
+        return temp;
 
     }
 
@@ -243,9 +243,9 @@ public class Main {
                 line = lines[nextLocation];
                 if ((line.matches("\\s*elif\\(.*\\):") || (line.matches("\\s*elif .*:")))) {
 
-                    if (line.matches("elif\\(.*\\):")) {
+                    if (line.matches("\\s*elif\\(.*\\):")) {
                         condition = line.replace("elif(", "").replace("):", "");
-                    } else if (line.matches("elif .*:")) {
+                    } else if (line.matches("\\s*elif .*:")) {
                         condition = line.replace("elif ", "").replace(":", "");
                     } else {
                         System.out.println("Syntax Error: Invalid format for elif statement");
@@ -385,90 +385,67 @@ public class Main {
     }
 
     private static boolean determineStatement(String line) {
-        if (line.contains("and") || line.contains("or")){
-            String[] statementArray = line.split("(((?<= and)|(?= and))|((?<= or)|(?= or)))(?![^()]*\\))");
 
-            int stateNum = 0;
-            boolean wholeCond = false;
-            for (String statement : statementArray){
+        if (line.contains("and")) {
+            int trueCount = 0;
+            String[] statementArray = line.split(" and ");
+            for (String statement : statementArray) {
+                if (determineStatement(statement)) trueCount++;
+            }
 
-                if (statement.matches("\\s*\\(([^()]+)\\)")){
-                    statementArray[stateNum] = String.valueOf(determineStatement(statement.replaceAll("\\s*[()]", "")));
-                }
-                statement = statement.replaceAll("\\s","");
-                if (statement.matches("and")){
-                    try{
-                        wholeCond = determineStatement(statementArray[stateNum - 1].replaceAll("\\s*[()]", ""))
-                                && determineStatement(statementArray[stateNum + 1].replaceAll("\\s*[()]", ""));
-                    }
-                    catch (ArrayIndexOutOfBoundsException e){
-                        System.out.println("Syntax Error: Invalid format for and condition statement");
-                        System.exit(0);
-                    }
-                }
-                else if (statement.matches("or")){
-                    try{
-                        wholeCond = determineStatement(statementArray[stateNum - 1].replaceAll("\\s*[()]", ""))
-                                || determineStatement(statementArray[stateNum + 1].replaceAll("\\s*[()]", ""));
-                    }
-                    catch (ArrayIndexOutOfBoundsException e){
-                        System.out.println("Syntax Error: Invalid format for or condition statement");
-                        System.exit(0);
-                    }
-                }
-                else{
-                    stateNum++;
-                    continue;
-                }
-                stateNum++;
-            }
-            if (wholeCond)
-                return true;
-            else
-                return false;
+            if (trueCount == statementArray.length) return true;
+            else return false;
         }
-        else{
-            line = line.replaceAll("\\s","");
-            if(line.matches("\\d*\\.*\\d*<\\d*\\.*\\d*"))
-            {
-                double x = Double.parseDouble(line.split("<")[0]);
-                double y = Double.parseDouble(line.split("<")[1]);
-                return x < y;
+        if (line.contains("or")) {
+            String[] statementArray = line.split(" or ");
+            int trueCount = 0;
+            for (String statement : statementArray) {
+                if (determineStatement(statement)) return true;
             }
-            else if(line.matches("\\d*\\.*\\d*<=\\d*\\.*\\d*"))
-            {
-                double x = Double.parseDouble(line.split("<=")[0]);
-                double y = Double.parseDouble(line.split("<=")[1]);
-                return x <= y;
-            }
-            else if(line.matches("\\d*\\.*\\d*>\\d*\\.*\\d*"))
-            {
-                double x = Double.parseDouble(line.split(">")[0]);
-                double y = Double.parseDouble(line.split(">")[1]);
-                return x > y;
-            }
-            else if(line.matches("\\d*\\.*\\d*>=\\d*\\.*\\d*"))
-            {
-                double x = Double.parseDouble(line.split(">=")[0]);
-                double y = Double.parseDouble(line.split(">=")[1]);
-                return x >= y;
-            }
-            else if(line.matches("\\d*\\.*\\d*==\\d*\\.*\\d*"))
-            {
-                double x = Double.parseDouble(line.split("==")[0]);
-                double y = Double.parseDouble(line.split("==")[1]);
-                return x == y;
-            }
-            else if(line.matches("\\d*\\.*\\d*!=\\d*\\.*\\d*"))
-            {
-                double x = Double.parseDouble(line.split("!=")[0]);
-                double y = Double.parseDouble(line.split("!=")[1]);
-                return x != y;
-            }
-            else if(line.matches("true"))
-                return true;
-            else
-                return false;
+
+            return false;
         }
+
+        line = line.replaceAll("\\s","");
+        if(line.matches("\\d*\\.*\\d*<\\d*\\.*\\d*"))
+        {
+            double x = Double.parseDouble(line.split("<")[0]);
+            double y = Double.parseDouble(line.split("<")[1]);
+            return x < y;
+        }
+        else if(line.matches("\\d*\\.*\\d*<=\\d*\\.*\\d*"))
+        {
+            double x = Double.parseDouble(line.split("<=")[0]);
+            double y = Double.parseDouble(line.split("<=")[1]);
+            return x <= y;
+        }
+        else if(line.matches("\\d*\\.*\\d*>\\d*\\.*\\d*"))
+        {
+            double x = Double.parseDouble(line.split(">")[0]);
+            double y = Double.parseDouble(line.split(">")[1]);
+            return x > y;
+        }
+        else if(line.matches("\\d*\\.*\\d*>=\\d*\\.*\\d*"))
+        {
+            double x = Double.parseDouble(line.split(">=")[0]);
+            double y = Double.parseDouble(line.split(">=")[1]);
+            return x >= y;
+        }
+        else if(line.matches("\\d*\\.*\\d*==\\d*\\.*\\d*"))
+        {
+            double x = Double.parseDouble(line.split("==")[0]);
+            double y = Double.parseDouble(line.split("==")[1]);
+            return x == y;
+        }
+        else if(line.matches("\\d*\\.*\\d*!=\\d*\\.*\\d*"))
+        {
+            double x = Double.parseDouble(line.split("!=")[0]);
+            double y = Double.parseDouble(line.split("!=")[1]);
+            return x != y;
+        }
+        else if(line.matches("true"))
+            return true;
+        else
+            return false;
     }
 }
