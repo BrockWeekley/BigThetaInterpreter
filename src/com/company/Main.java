@@ -117,7 +117,7 @@ public class Main {
 
             String whileStmt = lines[whileLine].replaceAll("while ", "").replace(":", "");
             System.out.println(replaceVariables(whileStmt));
-            flag = determineStatement(whileStmt);
+            flag = determineStatement(replaceVariables(whileStmt));
         }
 
 
@@ -262,6 +262,7 @@ public class Main {
 
                 }
                 if (lines[nextLocation].matches("\\s*else:")) {
+                    nextLocation++;
                     int lineTabs = tabs + 1;
                     while (lineTabs >= tabs + 1) {
                         lineTabs = countTabs(lines[nextLocation]);
