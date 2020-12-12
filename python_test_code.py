@@ -1,6 +1,7 @@
 # Pokemon master name
 name = "Ash Ketchum"
 
+
 # Pokemon Health Points
 charmender_HP = 110
 squirtle_HP = 125
