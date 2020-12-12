@@ -28,7 +28,7 @@ public class Main {
         String[] lines = in.split("\n");
         int i = 0;
         while(i < lines.length) {
-            if (lines[i].matches("\\s*#.*")) {
+            if (lines[i].matches("(\\s*#.*)|(^\\s*$)")) {
                 i++;
                 continue;
             }
@@ -144,8 +144,8 @@ public class Main {
                 temp = interpretLine(lines, lines[temp], temp);
                 temp++;
             }
-
-            assignVariables(forVariable + " += 1");
+            String nextIteration = forVariable + " += 1";
+            assignVariables(nextIteration);
         }
 
         return temp;
@@ -224,6 +224,7 @@ public class Main {
 //                System.exit(0);
             }
         }
+        //System.out.println(varName + ": " + vars.get(varName));
     }
 
     private static int countTabs(String line) {
@@ -313,7 +314,7 @@ public class Main {
                     return nextLocation;
                 }
             }
-
+            lineCount = nextLocation;
         }
 
         return lineCount;

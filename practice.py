@@ -37,7 +37,7 @@ while i != 1:
         print('Not equal to works')
 
     if 5 == 5:
-        print('equal to works')#What about this one?
+        print('equal to works')
 
     if 5 <= 4:
         print('You should never see this')
@@ -60,7 +60,8 @@ while i != 1:
 
     if 3 < 6:
         print('You should always see this, 3 is less than 6')
-    if 3 < 6 and 1 < 2:
+
+    if 3 < 6:
         print('This test of and should be successful')
 
     var1 += 1
