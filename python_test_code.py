@@ -43,12 +43,12 @@ prime_counter = 0
 for num in range(begin, end):
     if(num > 0):
         if(num == 2):
-            print("Prime: "+str(num))
+            print("Prime1: "+str(num))
         for i in range(2, int(num/2)+2):
             if (num%i==0):
                 break
             else:
-                print("Prime: "+str(num))
+                print("Prime2: "+str(num))
                 break
 
 
