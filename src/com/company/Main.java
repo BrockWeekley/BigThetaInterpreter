@@ -168,6 +168,8 @@ public class Main {
                 temp = interpretLine(lines, lines[temp], temp);
                 temp++;
             }
+
+            assignVariables(forVariable + " += 1");
         }
 
         return temp;
@@ -246,7 +248,7 @@ public class Main {
 //                System.exit(0);
             }
         }
-        System.out.println(varName + ": " + vars.get(varName));
+//        System.out.println(varName + ": " + vars.get(varName));
     }
 
     private static int countTabs(String line) {
