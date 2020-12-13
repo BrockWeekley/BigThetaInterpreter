@@ -6,6 +6,10 @@ var3 = 6
 var4 = 0
 var5 = 2
 
+if 5 == 5:
+    print("Fuck you Brad")
+    if 4 == 4:
+        print("Haley is great :)")
 
 while i != 1:
     print('----------------------------------------------------------')
@@ -32,6 +36,8 @@ while i != 1:
     print(var5)
 
 #   Did you find this line?
+
+
 
     if var1 != var2:
         print('Not equal to works')

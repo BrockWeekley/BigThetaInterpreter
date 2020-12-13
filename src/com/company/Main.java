@@ -15,6 +15,7 @@ public class Main {
 //    }};
 
     private static HashMap<String, String> vars = new HashMap<>();
+    private static boolean breakStatement = false;
 
     public static void main(String[] args) {
         String in = "y = 6 \n" +
@@ -152,21 +153,24 @@ public class Main {
         int lower = (int) Math.floor(interpretLower);
         int upper = (int) Math.floor(interpretUpper);
 
-        if (vars.containsKey(forVariable.replaceAll(" ", ""))) {
-            String assignmentStatement = forVariable + " += " + lower;
-            assignVariables(assignmentStatement);
-        } else {
-            String assignmentStatement = forVariable + " = " + lower;
-            assignVariables(assignmentStatement);
-        }
-
         int temp = forLine;
         int forTabs = countTabs(lines[temp]);
         for (int i = lower; i < upper; i++) {
+            if (!vars.containsKey(forVariable.replaceAll(" ", ""))) {
+                String assignmentStatement = forVariable + " = " + lower;
+                assignVariables(assignmentStatement);
+            }
             temp = forLine + 1;
             while (countTabs(lines[temp]) > forTabs && !lines[temp].equals("")) {
+                String lineTemp = lines[temp];
                 temp = interpretLine(lines, lines[temp], temp);
+                if (breakStatement) {
+                    break;
+                }
                 temp++;
+            }
+            if (breakStatement) {
+                break;
             }
             String nextIteration = forVariable + " += 1";
             assignVariables(nextIteration);
@@ -298,13 +302,16 @@ public class Main {
 //            System.exit(0);
             return lineCount;
         }
-
+        condition = replaceVariables(condition);
         boolean result = determineStatement(condition);
         if (result) {
+            if (lines[lineCount + 1].matches("\\s*break")) {
+                breakStatement = true;
+            }
             lineCount = trueIf(lines, tabs, lineCount);
         } else {
             int nextLocation = lineCount + 1;
-            while( countTabs(lines[nextLocation]) > tabs ) {
+            while( countTabs(lines[nextLocation]) >= tabs ) {
                 nextLocation++;
                 line = lines[nextLocation];
                 if ((line.matches("\\s*elif\\(.*\\):") || (line.matches("\\s*elif .*:")))) {
@@ -320,6 +327,9 @@ public class Main {
                     }
                     condition = replaceVariables(condition);
                     if (determineStatement(condition)) {
+                        if (lines[nextLocation].matches("\\s*break")) {
+                            breakStatement = true;
+                        }
                         lineCount = trueIf(lines, tabs, nextLocation);
                         return lineCount;
                     } else {
@@ -329,10 +339,13 @@ public class Main {
                 }
                 if (lines[nextLocation].matches("\\s*else:")) {
                     nextLocation++;
+                    if (lines[nextLocation].matches("\\s*break")) {
+                        breakStatement = true;
+                    }
                     int lineTabs = tabs + 1;
                     while (lineTabs >= tabs + 1) {
                         lineTabs = countTabs(lines[nextLocation]);
-                        interpretLine(lines, lines[nextLocation], nextLocation);
+                        nextLocation = interpretLine(lines, lines[nextLocation], nextLocation);
                         nextLocation++;
                     }
                     return nextLocation;
@@ -352,7 +365,7 @@ public class Main {
             if (lineTabs < tabs + 1) {
                 break;
             }
-            interpretLine(lines, lines[lineCount], lineCount);
+            lineCount = interpretLine(lines, lines[lineCount], lineCount);
             lineCount++;
         }
 
