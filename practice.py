@@ -6,6 +6,16 @@ var3 = 6
 var4 = 0
 var5 = 2
 
+for j in range(1, 5):
+    print(j)
+    for y in range(5, 10):
+        print(y)
+        for k in range(10, 15):
+            print(k)
+            for q in range(15, 20):
+                if q % 5 ==0:
+                    print("We did it bois")
+
 while i != 1:
     print('----------------------------------------------------------')
     print('\n')
@@ -61,9 +71,6 @@ while i != 1:
 
     if 3 < 6:
         print('You should always see this, 3 is less than 6')
-
-    if 3 < 6:
-        print('This test of and should be successful')
 
     var1 += 1
     var2 -= 1
