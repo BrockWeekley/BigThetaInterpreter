@@ -295,6 +295,8 @@ public class Main {
 
         if (line.matches("\\s*if\\(.*\\):")) {
             condition = line.replace("if(", "").replace("):", "");
+        } else if (line.matches("\\s*if \\(.*\\):")) {
+            condition = line.replace("if (", "").replace("):", "");
         } else if (line.matches("\\s*if .*:")) {
             condition = line.replace("if ", "").replace(":", "");
         } else {
@@ -302,7 +304,7 @@ public class Main {
 //            System.exit(0);
             return lineCount;
         }
-        condition = replaceVariables(condition);
+        condition = condition.replace(" ", "");
         boolean result = determineStatement(condition);
         if (result) {
             if (lines[lineCount + 1].matches("\\s*break")) {
@@ -311,7 +313,7 @@ public class Main {
             lineCount = trueIf(lines, tabs, lineCount);
         } else {
             int nextLocation = lineCount + 1;
-            while( countTabs(lines[nextLocation]) >= tabs ) {
+            while( countTabs(lines[nextLocation]) > tabs ) {
                 nextLocation++;
                 line = lines[nextLocation];
                 if ((line.matches("\\s*elif\\(.*\\):") || (line.matches("\\s*elif .*:")))) {
@@ -365,8 +367,11 @@ public class Main {
             if (lineTabs < tabs + 1) {
                 break;
             }
+            int previousLineCount = lineCount;
             lineCount = interpretLine(lines, lines[lineCount], lineCount);
-            lineCount++;
+            if (previousLineCount == lineCount) {
+                lineCount++;
+            }
         }
 
         int skipCount = lineCount;
