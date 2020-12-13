@@ -72,6 +72,15 @@ public class Main {
             line = replaceVariables(line);
         }
 
+        if (line.matches("\\s*break")) {
+            breakStatement = true;
+        }
+
+        if (breakStatement) {
+            lineCount += 1;
+            return lineCount;
+        }
+
         if (line.matches("\\s*while.*")) {
             lineCount = whileLoop(lines, line, lineCount);
         }
@@ -162,7 +171,6 @@ public class Main {
             }
             temp = forLine + 1;
             while (countTabs(lines[temp]) > forTabs && !lines[temp].equals("")) {
-                String lineTemp = lines[temp];
                 temp = interpretLine(lines, lines[temp], temp);
                 if (breakStatement) {
                     break;
@@ -170,12 +178,14 @@ public class Main {
                 temp++;
             }
             if (breakStatement) {
+                breakStatement = false;
+                vars.remove(forVariable);
                 break;
             }
             String nextIteration = forVariable + " += 1";
             assignVariables(nextIteration);
         }
-
+        vars.remove(forVariable);
         return temp;
     }
 
@@ -305,6 +315,12 @@ public class Main {
             return lineCount;
         }
         condition = condition.replace(" ", "");
+        String leftSide;
+        if (condition.matches(".*==.*")) {
+            leftSide = condition.substring(0, condition.indexOf("="));
+            condition = condition.substring(condition.indexOf("="));
+            condition = interpretMath(leftSide) + condition;
+        }
         boolean result = determineStatement(condition);
         if (result) {
             lineCount = trueIf(lines, tabs, lineCount);
