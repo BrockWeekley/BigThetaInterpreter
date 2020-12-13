@@ -307,9 +307,6 @@ public class Main {
         condition = condition.replace(" ", "");
         boolean result = determineStatement(condition);
         if (result) {
-            if (lines[lineCount + 1].matches("\\s*break")) {
-                breakStatement = true;
-            }
             lineCount = trueIf(lines, tabs, lineCount);
         } else {
             int nextLocation = lineCount + 1;
@@ -329,9 +326,6 @@ public class Main {
                     }
                     condition = replaceVariables(condition);
                     if (determineStatement(condition)) {
-                        if (lines[nextLocation].matches("\\s*break")) {
-                            breakStatement = true;
-                        }
                         lineCount = trueIf(lines, tabs, nextLocation);
                         return lineCount;
                     } else {
@@ -341,9 +335,6 @@ public class Main {
                 }
                 if (lines[nextLocation].matches("\\s*else:")) {
                     nextLocation++;
-                    if (lines[nextLocation].matches("\\s*break")) {
-                        breakStatement = true;
-                    }
                     int lineTabs = tabs + 1;
                     while (lineTabs >= tabs + 1) {
                         lineTabs = countTabs(lines[nextLocation]);
