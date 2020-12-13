@@ -6,11 +6,6 @@ var3 = 6
 var4 = 0
 var5 = 2
 
-if 5 == 5:
-    print("Fuck you Brad")
-    if 4 == 4:
-        print("Haley is great :)")
-
 while i != 1:
     print('----------------------------------------------------------')
     print('\n')

@@ -1,7 +1,6 @@
 # Pokemon master name
 name = "Ash Ketchum"
 
-
 # Pokemon Health Points
 charmender_HP = 110
 squirtle_HP = 125
@@ -26,7 +25,6 @@ while charmender_HP > 0 and squirtle_HP > 0:
         charmender_HP -= squirtle_attack
         print("Squirtle faught back and did "+str(squirtle_attack)+" damage")
         print("Charmender got bitten! HP is: "+str(squirtle_HP))
-        # print("Charmender got bitten! HP is: "+str(charmender_HP))
         turn = 1
 
 # Print winner pokemon
@@ -63,7 +61,7 @@ print("EQ2: "+str(eq2))
 
 # Uncomment this code block below for BONUS (Syntax error)
 # This is just a simple example...
-# if(eq2 == 0)
-#    print("This code shouldn't run")
-# else
-#    print "this one as well!"
+if(eq2 == 0)
+   print("This code shouldn't run")
+else
+   print "this one as well!"

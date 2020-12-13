@@ -4,33 +4,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.regex.Pattern;
 
 public class Main {
-//    private static List<String> keywords = new ArrayList<>(){{
-//        add("while");
-//        add("for");
-//        add("print");
-//        add("if");
-//    }};
 
     private static HashMap<String, String> vars = new HashMap<>();
     private static boolean breakStatement = false;
 
     public static void main(String[] args) {
-        String in = "y = 6 \n" +
-                "x = (y + y) % 2\n" +
-                "if(x==1):\n" +
-                "    print('Inside the if')\n" +
-                "    print('Inside the if')\n" +
-                "elif(x==2):\n" +
-                "    print('Inside the elif')\n" +
-                "    print('Inside the elif')\n" +
-                "else:\n" +
-                "    print('Inside the else')\n" +
-                "\n" +
-                "y = 4\n" +
-                "print(y)";
+        String in;
         while(true) {
             Scanner myObj = new Scanner(System.in);
             System.out.println("Welcome to the python interpreter, please enter the name of your file, followed by the .py extension.");
@@ -45,7 +26,6 @@ public class Main {
 
         in = in.replaceAll("\\r", "");
         String[] lines = in.split("\n");
-//        for (int i = 0; i < lines.length;) {
         int i = 0;
         while(i < lines.length) {
             if (lines[i].matches("(\\s*#.*)|(^\\s*$)")) {
@@ -113,6 +93,7 @@ public class Main {
         }
         else{
             System.out.println("Syntax Error: Invalid format for while statement");
+            System.exit(0);
         }
 
         int temp = whileLine;
@@ -144,6 +125,7 @@ public class Main {
         }
         else{
             System.out.println("Syntax Error: Invalid format for for statement");
+            System.exit(0);
         }
 
         if (line.contains("int(")) {
@@ -259,10 +241,9 @@ public class Main {
                 vars.put(varName, newValue);
             } else {
                 System.out.println("Syntax Error: Variable " + varName + " not defined.");
-//                System.exit(0);
+                System.exit(0);
             }
         }
-        //System.out.println(varName + ": " + vars.get(varName));
     }
 
     private static int countTabs(String line) {
@@ -311,7 +292,7 @@ public class Main {
             condition = line.replace("if ", "").replace(":", "");
         } else {
             System.out.println("Syntax Error: Invalid format for if statement");
-//            System.exit(0);
+            System.exit(0);
             return lineCount;
         }
         condition = condition.replace(" ", "");
@@ -337,7 +318,7 @@ public class Main {
                         condition = line.replace("elif ", "").replace(":", "");
                     } else {
                         System.out.println("Syntax Error: Invalid format for elif statement");
-//                        System.exit(0);
+                        System.exit(0);
                         return nextLocation;
                     }
                     condition = replaceVariables(condition);
