@@ -9,13 +9,15 @@ import java.util.regex.Pattern;
 public class Main {
 
     private static HashMap<String, String> vars = new HashMap<>();
+    private static boolean broken = false;
 
     public static void main(String[] args) {
         String in;
         while(true) {
-            Scanner myObj = new Scanner(System.in);
+//            Scanner myObj = new Scanner(System.in);
             System.out.println("Welcome to the python interpreter, please enter the name of your file, followed by the .py extension.");
-            String filename = myObj.nextLine();
+//            String filename = myObj.nextLine();
+            String filename = "python_test_code.py";
             try {
                 in = Files.readString(Path.of(filename));
                 break;
@@ -35,7 +37,7 @@ public class Main {
             int j = interpretLine(lines, lines[i], i);
             if (i == j) {
                 i++;
-            } else {
+            } else if (j != -1) {
                 i = j;
             }
         }
@@ -50,6 +52,14 @@ public class Main {
             assignVariables(line);
         } else {
             line = replaceVariables(line);
+        }
+
+        if (broken) {
+            return lineCount++;
+        }
+
+        if (line.matches("\\s*break")){
+            broken = true;
         }
 
         if (line.matches("\\s*while.*")) {
@@ -133,8 +143,13 @@ public class Main {
         int lower = (int) Math.floor(interpretLower);
         int upper = (int) Math.floor(interpretUpper);
 
-        String assignmentStatement = forVariable + " = " + lower;
-        assignVariables(assignmentStatement);
+        if (vars.get(forVariable) == null) {
+            String assignmentStatement = forVariable + " = " + lower;
+            assignVariables(assignmentStatement);
+        } else {
+            lower = (int) Math.floor(Double.parseDouble(vars.get(forVariable)));;
+        }
+
 
         int temp = forLine;
         int forTabs = countTabs(lines[temp]);
@@ -144,8 +159,14 @@ public class Main {
                 temp = interpretLine(lines, lines[temp], temp);
                 temp++;
             }
+
             String nextIteration = forVariable + " += 1";
             assignVariables(nextIteration);
+
+            if (broken) {
+                broken = false;
+                return -1;
+            }
         }
 
         return temp;
@@ -308,7 +329,7 @@ public class Main {
                     int lineTabs = tabs + 1;
                     while (lineTabs >= tabs + 1) {
                         lineTabs = countTabs(lines[nextLocation]);
-                        interpretLine(lines, lines[nextLocation], nextLocation);
+                        nextLocation = interpretLine(lines, lines[nextLocation], nextLocation);
                         nextLocation++;
                     }
                     return nextLocation;
@@ -328,7 +349,7 @@ public class Main {
             if (lineTabs < tabs + 1) {
                 break;
             }
-            interpretLine(lines, lines[lineCount], lineCount);
+            lineCount = interpretLine(lines, lines[lineCount], lineCount);
             lineCount++;
         }
 
@@ -432,7 +453,7 @@ public class Main {
             int trueCount = 0;
             String[] statementArray = line.split(" and ");
             for (String statement : statementArray) {
-                if (determineStatement(statement)) trueCount++;
+                if (determineStatement(statement.replaceAll("[\\(\\)]", ""))) trueCount++;
             }
 
             if (trueCount == statementArray.length) return true;
@@ -442,7 +463,7 @@ public class Main {
             String[] statementArray = line.split(" or ");
             int trueCount = 0;
             for (String statement : statementArray) {
-                if (determineStatement(statement)) return true;
+                if (determineStatement(statement.replaceAll("[\\(\\)]", ""))) return true;
             }
 
             return false;
