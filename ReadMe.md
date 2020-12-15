@@ -2,8 +2,8 @@
 ###Members
 1. Brock Weekley
 2. Robert Truesdale
-3. Haley
-4. Brad S
+3. Haley Massa
+4. Brad Schinker
 5. Josh Ward
 
 
