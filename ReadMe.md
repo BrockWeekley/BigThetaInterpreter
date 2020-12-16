@@ -1,5 +1,6 @@
-#Big Theta Interpreter Project
-###Members
+# Big Theta Interpreter Project
+
+### Members
 1. Brock Weekley
 2. Robert Truesdale
 3. Haley Massa
@@ -8,7 +9,7 @@
 
 
 
-##Summary
+## Summary
 At the start of the program, the interpreter will ask you for a file to interpret.
 Once the user has provided a filename, we lookup that file and read it into a string.
 We then parse this string line by line, interpreting each line with various keywords,
