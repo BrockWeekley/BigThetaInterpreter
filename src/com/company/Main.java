@@ -23,7 +23,7 @@ public class Main {
                 System.out.println("Could not read from file");
             }
         }
-
+        System.out.println("\n");
         in = in.replaceAll("\\r", "");
         String[] lines = in.split("\n");
         int i = 0;

@@ -23,11 +23,6 @@ while i != 1:
     if valid:
         print('Not Valid (You should never see this)')
 
-    valid = True
-
-    if valid:
-        print('Valid (You should always see this')
-
     var1 = (var3/350) * 6
     var2 = var1 * 350
     var4 = var1 % var5
