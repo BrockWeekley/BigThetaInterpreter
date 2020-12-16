@@ -1,0 +1,9 @@
+Group Name: Big Theta
+Github Link: https://github.com/BrockWeekley/BigThetaInterpreter
+Team members: Brock Weekley, Josh Ward, Brad Schinker, Robert Truesdale, Haley Massa
+
+Brock: 
+Josh:
+Brad:
+Robert:
+Haley:
